@@ -11,14 +11,13 @@ void main2(void);
 
 
 // asm functions
-extern void __asm__copy_reg (void);
-
-
-// functions
-void make_process (user_process_t *p1);
-
-
-
+extern void __asm__copy_reg (uint32_t *addr);
+extern void __asm__get_PRIMASK (uint32_t *addr);
+extern void __asm__get_FAULTMASK (uint32_t *addr);
+extern void __asm__get_BASEPRI (uint32_t *addr);
+extern void __asm__set_psp (uint32_t value);
+extern void __asm__set_msp (uint32_t value);
+extern void __asm__switch_to_usermode (void);
 
 
 void __usart1_init (void);
