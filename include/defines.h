@@ -12,7 +12,7 @@
 #define M1_KERNEL_ST_INIT 0x20017800
 #define RUNNING_PROCESS_AD M1_KERNEL_ST_INIT+0x4    // stores address of running process
 #define PICKED_PROCESS_AD RUNNING_PROCESS_AD+0x4    // stores address of picked process
-
+#define SIZE_PROCESS 39*4
 
 
 
@@ -46,7 +46,7 @@ typedef struct user_process_t {
     volatile uint32_t IABR[8U];                              // set active interrupt
 
     /******************* about process ****************************************/
-    uint8_t  state;             // waiting/running/io
+    uint32_t  state;             // waiting/running/io
 
 
 } user_process_t;

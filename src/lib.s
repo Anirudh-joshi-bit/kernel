@@ -47,7 +47,12 @@ SysTick_Handler:
     /* dont need to dissable interrupts as interrupt will not change mask registers
     or control register ... though it can change the psr register but as psr is a 
     caller saved register it will be recovered before returning from the isr*/
+    
 
+    /*****************let schedular populate picked proces*********************/
+    push {lr} // store the EXEC_RETURN
+    bl   schedular
+    pop {lr}
 
     /************************ start saving reg*********************************/
 
@@ -89,7 +94,7 @@ SysTick_Handler:
     // dont need to restore the caller saved register !!!
     ldr r0, =PICKED_PROCESS
     ldr r1, [r0]
-    ldmia r1!, {r4, r11}
+    ldmia r1!, {r4-r11}
    
 
     /* before setting psp, msp, faultmask, basepri -> mask all interrupt
@@ -165,6 +170,14 @@ loop3 :
     ldr r0, [r1]
     msr PRIMASK, r0
     add r1, #4
+
+    /* whatever is picked by the schedular, make it running ... picked -----> running*/
+    ldr r0, =PICKED_PROCESS
+    ldr r1, =RUNNING_PROCESS
+    ldr r2, [r0]
+    ldr r3, [r1]
+    str r2, [r1]
+    str r3, [r0]
 
 
     bx lr
