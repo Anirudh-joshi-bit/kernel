@@ -21,14 +21,25 @@ void schedular(void) {
    * code assumes that if one process is in waiting state ->other process must
    * be running
    */
+    user_process_t* picked = NULL;
+    user_process_t* run = NULL;
+    if (state_process1 == RUNNING_STATE || state_process1 == IO_RUNNING_STATE){
+        picked = &process2;
+        run = &process1;
+    }
+    else {
+        picked = &process1;
+        run = &process2;
+    }
+   
+    picked-> state = ~(picked->state);
+    run-> state = ~(run->state);
 
-  if (state_process2 == WAITING_STATE) {
-    *((uint32_t *)(PICKED_PROCESS_AD)) = (uint32_t)(&process2);
-    process1.state = WAITING_STATE;
-    process2.state = RUNNING_STATE;
-  } else {
-    *((uint32_t *)(PICKED_PROCESS_AD)) = (uint32_t)(&process1);
-    process1.state = RUNNING_STATE;
-    process2.state = WAITING_STATE;
-  }
+    *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t) (picked);
+
+
+
+    /* after picking the process, set the PendSV */
+    //SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
+
 }

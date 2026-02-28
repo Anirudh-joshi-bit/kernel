@@ -58,8 +58,16 @@ SysTick_Handler:
 
     ldr r0, =RUNNING_PROCESS
     ldr r1, [r0]            // r1 now contain the struct address
-    stmia r1!, {r4-r11}     // r4->r11 stored in the runnging process struct
     
+    ldr r0, =PICKED_PROCESS
+    ldr r2, [r0]
+
+    cmp r2, r1 
+    it eq
+    bxeq lr
+
+    stmia r1!, {r4-r11}     // r4->r11 stored in the runnging process struct
+
     mrs r0, psp
     str r0, [r1]
     add r1, #4
@@ -175,10 +183,7 @@ loop3 :
     ldr r0, =PICKED_PROCESS
     ldr r1, =RUNNING_PROCESS
     ldr r2, [r0]
-    ldr r3, [r1]
     str r2, [r1]
-    str r3, [r0]
-
 
     bx lr
 

@@ -1,18 +1,19 @@
 #pragma once
 
-#define MAIN1_PROCESS_NUM 0
-#define MAIN2_PROCESS_NUM 1
-#define WAITING_STATE   00
-#define RUNNING_STATE   01 
-#define IO_STATE        02
-#define M2_USER_ST_INIT 0x20007000
-#define M1_USER_ST_INIT 0x2000c000
-#define USER_SPACE 0x2000c000
-#define M2_KERNEL_ST_INIT 0x20011c00
-#define M1_KERNEL_ST_INIT 0x20017800
+#define MAIN1_PROCESS_NUM               0
+#define MAIN2_PROCESS_NUM               1
+#define WAITING_STATE                   00
+#define RUNNING_STATE                   ~WAITING_STATE
+#define IO_STATE                        01
+#define IO_RUNNING_STATE                ~IO_STATE
+#define M2_USER_ST_INIT                 0x20007000
+#define M1_USER_ST_INIT                 0x2000c000
+#define USER_SPACE                      0x2000c000
+#define M2_KERNEL_ST_INIT               0x20011c00
+#define M1_KERNEL_ST_INIT               0x20017800
+#define SIZE_PROCESS                    39*4
 #define RUNNING_PROCESS_AD M1_KERNEL_ST_INIT+0x4    // stores address of running process
 #define PICKED_PROCESS_AD RUNNING_PROCESS_AD+0x4    // stores address of picked process
-#define SIZE_PROCESS 39*4
 
 
 
