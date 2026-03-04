@@ -9,6 +9,9 @@
 void main1(void);
 void main2(void);
 
+// syscalls
+void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 
 // asm functions
 extern void __asm__copy_reg (uint32_t *addr);

@@ -14,7 +14,11 @@
 #define SIZE_PROCESS                    39*4
 #define RUNNING_PROCESS_AD M1_KERNEL_ST_INIT+0x4    // stores address of running process
 #define PICKED_PROCESS_AD RUNNING_PROCESS_AD+0x4    // stores address of picked process
-
+#define RX_PIN                          9
+#define TX_PIN                          10 
+#define MAX_STR_SIZE                    100
+#define MAX_SYSCALL_NUM                 10
+#define SYSCALL_TABLE_AD                M1_KERNEL_ST_INIT+0xc
 
 
 

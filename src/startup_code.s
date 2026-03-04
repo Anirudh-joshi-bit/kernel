@@ -111,15 +111,6 @@ UsageFault_Handler :
 .size UsageFault_Handler, . - UsageFault_Handler
 
 
-/************************ Default_Handler start**********************/
-.section .text.SVC_handler
-.global SVC_Handler
-.type SVC_Handler, %function
-SVC_Handler :
-    B .
-
-.size SVC_Handler, . - SVC_Handler
-
 
 /************************ Default_Handler start**********************/
 .section .text.DebugMon_handler
@@ -132,13 +123,6 @@ DebugMon_Handler :
 
 
 /************************ Default_Handler start**********************/
-.section .text.PendSV_handler
-.global PendSV_Handler 
-.type PendSV_Handler, %function
-PendSV_Handler:
-    B .
-
-.size PendSV_Handler, . - PendSV_Handler
 
 
 

@@ -1,7 +1,12 @@
 #include "../include/commons.h"
+#include <stdint.h>
 
 extern void copy_gpreg (uint32_t *regs);
+/************************syscalls declaration*************************/
+void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 
+void (*Syscall_Table [MAX_SYSCALL_NUM]) (uint32_t , uint32_t, uint32_t, uint32_t); 
 
 user_process_t process1;
 user_process_t process2;
@@ -14,13 +19,17 @@ void launch_process (void);
 
 int main() {
 
- // main1();
- // main2();  
+    SCB->SHP[10] = 0xff;    // set the PendSV to be the lowest priority...
+
     /* some init code */
-    make_process (&process1, MAIN1_PROCESS_NUM);
-    make_process (&process2, MAIN2_PROCESS_NUM);
+    __usart1_init();
+    Syscall_Table[0] =  syscall__printf;
+    Syscall_Table[1] =  syscall__scanf;
+    *(uint32_t *)(SYSCALL_TABLE_AD) = (uint32_t)(Syscall_Table);
     
-    //call main1, main2
+
+    make_process (&process1, MAIN1_PROCESS_NUM);
+    make_process (&process2, MAIN2_PROCESS_NUM);   
 
     /* start the processes */
     launch_process();
