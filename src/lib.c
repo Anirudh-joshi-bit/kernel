@@ -38,14 +38,6 @@ void schedular(void) {
     *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t) (picked);
 
 
-    /* after picking the process, set the PendSV */
-    SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
-
-}
-
-void SVC_Handler_helper (uint8_t syscall_num){
-
-    while (1);
 }
 
 uint32_t strlen (const char *msg){
@@ -134,7 +126,9 @@ void printf(const char *msg, uint32_t address) {
 }
 
 void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d){
+    ((user_process_t *) RUNNING_PROCESS_AD)-> state = IO_RUNNING_STATE;
     printf ((const char *)a, b);
+    ((user_process_t *) RUNNING_PROCESS_AD)-> state = RUNNING_STATE;
 }
 
 void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d){

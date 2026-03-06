@@ -33,6 +33,10 @@
 .type PendSV_Handler, %function
 PendSV_Handler:
     
+    push {lr}
+    bl schedular
+    pop {lr}
+
     /************************ start saving reg*********************************/
     ldr r0, =RUNNING_PROCESS
     ldr r1, [r0]            // r1 now contain the struct address
@@ -64,9 +68,11 @@ PendSV_Handler:
     mrs r0, BASEPRI
     str r0, [r1]
     add r1, #4
-                    
+    
     mrs r0, PRIMASK     // at the end -> restore the primask 
     str r0, [r1]
+
+    dsb
 
     /*store the value of ispr, icpr, iabr regs into the struct*/
     // todo ********************************************************************
@@ -107,51 +113,6 @@ PendSV_Handler:
     msr BASEPRI, r0
     add r1, #4
     
-    mov r2, r1 
-    add r2, #4
-    mov r3, #8
-    b loop1
-
-loop1 :
-    sub r3, #1
-    ldr r0, =ISPR
-    ldr r12, [r2]
-    add r2, #4
-    str r12, [r0]
-    add r0, #4
-    
-    cmp r3, #0
-    bne loop1
-
-    mov r3, #8
-    b loop2   
-
-loop2 :
-    sub r3, #1
-    ldr r0, =ICPR
-    ldr r12, [r2]
-    add r2, #4
-    str r12, [r0]
-    add r0, #4
-    
-    cmp r3, #0
-    bne loop2
-
-
-    mov r3, #8
-    b loop3
-
-loop3 :
-    sub r3, #1
-    ldr r0, =IABR
-    ldr r12, [r2]
-    add r2, #4
-    str r12, [r0]
-    add r0, #4
-    
-    cmp r3, #0
-    bne loop3
-
     // do this in the end
     ldr r0, [r1]
     msr PRIMASK, r0
@@ -162,6 +123,8 @@ loop3 :
     ldr r1, =RUNNING_PROCESS
     ldr r2, [r0]
     str r2, [r1]
+    
+    dsb
 
     bx lr
 
@@ -189,11 +152,13 @@ SysTick_Handler:
     caller saved register it will be recovered before returning from the isr*/
     
 
-    /*****************let schedular populate picked proces*********************/
-    push {lr} // store the EXEC_RETURN
-    bl   schedular
-    pop {lr}
+    /*****************set the PendSV interrupt*********************/
     
+    ldr r0, =0xE000ED04      // Address of ICSR register
+    ldr r1, =0x10000000      // Bit 28 (PENDSVSET)
+    str r1, [r0]             // Set PendSV pending
+
+
     bx lr
 
 /****************************** SysTick_Handler end ********************/ 

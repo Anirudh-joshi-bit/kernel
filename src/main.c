@@ -79,12 +79,6 @@ switch to p2, bx lr will be called => starting -> set lr to a valid EXEC_RETURN 
     __asm__get_FAULTMASK (&(process->FAULTMASK));
     __asm__get_BASEPRI (&(process->BASEPRI));
 
-    /* NVIC register copy */
-    for (uint8_t i=0; i<8; i++){
-        process->ISPR[i] = NVIC->ISPR[i];
-        process->IABR[i] = NVIC->IABR[i];
-        process->ICPR[i] = NVIC->ICPR[i];
-    }
 }
 
 void  launch_process (void){

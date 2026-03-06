@@ -11,7 +11,7 @@
 #define USER_SPACE                      0x2000c000
 #define M2_KERNEL_ST_INIT               0x20011c00
 #define M1_KERNEL_ST_INIT               0x20017800
-#define SIZE_PROCESS                    39*4
+#define SIZE_PROCESS                    15*4
 #define RUNNING_PROCESS_AD M1_KERNEL_ST_INIT+0x4    // stores address of running process
 #define PICKED_PROCESS_AD RUNNING_PROCESS_AD+0x4    // stores address of picked process
 #define RX_PIN                          9
@@ -46,9 +46,6 @@ typedef struct user_process_t {
              /*** donot store the control reg ***/
  //   uint32_t CONTROL;                      // control register
                         /* NVIC registers*/
-    volatile uint32_t ISPR[8U];                              // set interrupt pending
-    volatile uint32_t ICPR[8U];                              // clear interrupt pending
-    volatile uint32_t IABR[8U];                              // set active interrupt
 
     /******************* about process ****************************************/
     uint32_t  state;             // waiting/running/io
