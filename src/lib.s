@@ -11,9 +11,8 @@
 
    /*lr stores the return address */
 /************************* defines ************************************/
-.equ WAITING_STATE, 0x0
-.equ RUNNING_STATE, 0x1
-.equ IO_STATE,      0x2
+.equ READY_STATE, 0x0
+.equ RUNNING_STATE, ~READY_STATE
 
 
 /*************************NVIC_REG address*******************/
@@ -22,9 +21,11 @@
 .equ IABR, 0xE000E000+0x0100+0x200
 
 
-.equ RUNNING_PROCESS, 0x20017800+0x4
-.equ PICKED_PROCESS, 0x20017800+0x8
-.equ SYSCALL_TABLE_AD, 0x20017800+0xc
+.equ KERNEL_SPACE_INIT, 0x20016000
+.equ USER_SPACE_INIT,   0x2000c000
+.equ RUNNING_PROCESS, KERNEL_SPACE_INIT+0x4
+.equ PICKED_PROCESS, KERNEL_SPACE_INIT+0x8
+.equ SYSCALL_TABLE_AD, KERNEL_SPACE_INIT+0xc
 
 
 

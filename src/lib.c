@@ -1,12 +1,12 @@
 #include "../include/commons.h"
 
-extern user_process_t process1;
-extern user_process_t process2;
+extern user_process_t process[MAX_PROCESS_NUM];
+extern queue_t ready_queue;
 
 void schedular(void) {
 
-  uint32_t state_process1 = *((uint32_t*)(&process1) + (SIZE_PROCESS - 4)/4);
-  uint32_t state_process2 = *((uint32_t*)(&process2) + (SIZE_PROCESS - 4)/4);
+//  uint32_t state_process1 = *((uint32_t*)(&process[0]) + (SIZE_PROCESS - 4)/4);
+//  uint32_t state_process2 = *((uint32_t*)(&process[1]) + (SIZE_PROCESS - 4)/4);
   /* both the process cannot be waiting at the same time
    * both the process cannot be running at the same time
    * if one process is waiting -> then pick it
@@ -21,22 +21,38 @@ void schedular(void) {
    * code assumes that if one process is in waiting state ->other process must
    * be running
    */
-    user_process_t* picked = NULL;
-    user_process_t* run = NULL;
-    if (state_process1 == RUNNING_STATE || state_process1 == IO_RUNNING_STATE){
-        picked = &process2;
-        run = &process1;
-    }
-    else {
-        picked = &process1;
-        run = &process2;
-    }
-   
-    picked-> state = ~(picked->state);
-    run-> state = ~(run->state);
+//    user_process_t* picked = NULL;
+//    user_process_t* run = NULL;
+//    if (state_process1 == RUNNING_STATE){
+//        picked = &process[1];
+//        run = &process[0];
+//    }
+//    else {
+//        picked = &process[0];
+//        run = &process[1];
+//    }
+//   
+//    picked-> state = ~(picked->state);
+//    run-> state = ~(run->state);
+//
+//    *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t) (picked);
 
-    *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t) (picked);
 
+    /* Round Robin (FCFS + time slice)*/
+    user_process_t *picked_process = NULL;
+    user_process_t *running_process = *(user_process_t **) (RUNNING_PROCESS_AD);
+
+    picked_process = queue_front (&ready_queue);
+    uint8_t status = queue_pop (&ready_queue);
+
+    if (status == -1 || !picked_process) 
+        return;
+
+    *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t)(picked_process);
+    picked_process-> state = RUNNING_STATE;
+    running_process->state = READY_STATE;
+
+    queue_push (&ready_queue, running_process);
 
 }
 
@@ -126,9 +142,9 @@ void printf(const char *msg, uint32_t address) {
 }
 
 void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d){
-    ((user_process_t *) RUNNING_PROCESS_AD)-> state = IO_RUNNING_STATE;
+    //((user_process_t *) RUNNING_PROCESS_AD)-> state = IO_RUNNING_STATE;
     printf ((const char *)a, b);
-    ((user_process_t *) RUNNING_PROCESS_AD)-> state = RUNNING_STATE;
+    //((user_process_t *) RUNNING_PROCESS_AD)-> state = RUNNING_STATE;
 }
 
 void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d){

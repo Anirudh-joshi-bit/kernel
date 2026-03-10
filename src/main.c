@@ -1,20 +1,27 @@
 #include "../include/commons.h"
 #include <stdint.h>
 
-extern void copy_gpreg (uint32_t *regs);
 /************************syscalls declaration*************************/
 void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 
 void (*Syscall_Table [MAX_SYSCALL_NUM]) (uint32_t , uint32_t, uint32_t, uint32_t); 
 
-user_process_t process1;
-user_process_t process2;
+/* store the process struct and pc of each process */
+user_process_t process [MAX_PROCESS_NUM];
+void (*process_pc[MAX_PROCESS_NUM]) (void);
+queue_t ready_queue;
 
 
-void main1 ();
-void main2 ();
-void make_process (user_process_t* process, bool process_num);
+/* set the value of this variable according to the number of processes you have */
+uint8_t  process_count = 4;
+
+void main1 (void);          // this is must (atleast one process)
+void main2 (void);
+void main3 (void);
+void main4 (void);
+
+void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind);
 void launch_process (void);
 
 int main() {
@@ -23,20 +30,57 @@ int main() {
 
     /* some init code */
     __usart1_init();
+    queue_init (&ready_queue, process_count);
+
+    if (process_count < 1 || process_count > MAX_PROCESS_NUM){
+        printf ("ERROR in the number of process ....\n\r", 0x0);
+        while (1);
+    }
+
+    /* init syscall table */
     Syscall_Table[0] =  syscall__printf;
     Syscall_Table[1] =  syscall__scanf;
     *(uint32_t *)(SYSCALL_TABLE_AD) = (uint32_t)(Syscall_Table);
     
+    uint32_t psp_val = USER_SPACE_INIT;
+    uint32_t msp_val = KERNEL_SPACE_INIT;
+    uint32_t stack_size = TOTAL_STACK_SIZE / process_count;
 
-    make_process (&process1, MAIN1_PROCESS_NUM);
-    make_process (&process2, MAIN2_PROCESS_NUM);   
+    /* fill the pcs */
+    process_pc [0] = main1;
+    process_pc [1] = main2;
+    process_pc [2] = main3;
+    process_pc [3] = main4;
+//    process_pc [4] = main5;
+//    process_pc [5] = main6;
+//    process_pc [6] = main7;
+//    process_pc [7] = main8;
+//    process_pc [8] = main9;
+//    process_pc [9] = main10;
+//    process_pc [10] = main11;
+//    process_pc [11] = main12;
+//    process_pc [12] = main13;
+//    process_pc [13] = main14;
+//    process_pc [14] = main15;
+//    process_pc [15] = main16;
+//    process_pc [16] = main17;
+//    process_pc [17] = main18;
+//    process_pc [18] = main19;
+//    process_pc [19] = main20;
 
+    for (uint8_t i=0; i<process_count; i++){
+        make_process (&process[i], psp_val, msp_val, i);
+        psp_val -= stack_size;
+        msp_val -= stack_size;
+    }
+    
     /* start the processes */
     launch_process();
+    /* should never fall to this section */
     while (1);
 }
 
-void make_process (user_process_t* process, bool process_num){
+void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind){
     process->r4 = process->r5 = process->r6 = process->r7 = process->r8 
         = process->r9 = process->r10 = process->r11 = 0;
 
@@ -46,15 +90,10 @@ switch to p2, bx lr will be called => starting -> set lr to a valid EXEC_RETURN 
     process-> lr = 0xfffffffd;
 
 
-    void (*fun) (void) = 0;
-    if (process_num)
-        fun = main2;
-    else 
-        fun = main1;
 
     //process->pc = (uint32_t) fun;
-    process->psp = process_num ? M2_USER_ST_INIT : M1_USER_ST_INIT;
-    process->msp = process_num ? M2_KERNEL_ST_INIT : M1_KERNEL_ST_INIT;
+    process->psp = psp & (~3);
+    process->msp = msp & (~3);
     process->psp -= 8*4;        // start from 8 word below the base of the stack
     
     /* set the value of pc in side the padding (of 8w)
@@ -63,14 +102,13 @@ switch to p2, bx lr will be called => starting -> set lr to a valid EXEC_RETURN 
     set the xPSR word in the stack to 0x01000000 as 24th bit must ne 1 for xPSR to 
     represent thumb state 
     */
-    uint32_t psp_value = process->psp;
     for (int i=0; i<8; i++){
         if (i == 6)
-            *(uint32_t *)(psp_value+i*4) = (uint32_t) fun;
+            *(uint32_t *)(process->psp+i*4) = (uint32_t) process_pc [ind];
         else if (i == 7)
-            *(uint32_t *)(psp_value+i*4) = 0x01000000;
+            *(uint32_t *)(process->psp+i*4) = 0x01000000;
         else 
-            *(uint32_t *)(psp_value+i*4) = 0x0;
+            *(uint32_t *)(process->psp+i*4) = 0x0;
     }
     
     // set psp 
@@ -89,8 +127,8 @@ void  launch_process (void){
      *
      * dont enable interrupt in NVIC ( NVIC is for external interrupts )
      * */
-    __asm__set_psp (process1.psp);
-    __asm__set_msp (process1.msp);
+    __asm__set_psp (process[0].psp);
+    __asm__set_msp (process[0].msp);
        
 
     SysTick->LOAD = 16000 - 1;
@@ -100,9 +138,18 @@ void  launch_process (void){
     // put the address of process1 in RUNNING_PROCESS_AD
     // change the state field in process
 
-    *(uint32_t *)(RUNNING_PROCESS_AD) = (uint32_t)(&process1);
-    process1.state = RUNNING_STATE;
-    process2.state = WAITING_STATE;
+    *(uint32_t *)(RUNNING_PROCESS_AD) = (uint32_t)(&process[0]);
+
+    /* initially all the processes will be placed in the ready queue except the first one (entry point) */
+    for (uint8_t i=1; i<process_count; i++){
+        queue_push (&ready_queue, &process[i]);
+    }
+
+    process[0].state = RUNNING_STATE;
+    for (uint8_t i=1; i<process_count; i++){
+        process[i].state = READY_STATE;
+    }
+
 
     main1 ();
 

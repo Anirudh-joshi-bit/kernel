@@ -29,4 +29,7 @@ uint32_t strlen (const char *msg);
 uint32_t erase_flash (uint32_t address);
 uint32_t flash_write (uint32_t dest, const char* src, uint32_t size, uint32_t delay);
 void delay (uint32_t  count);
-
+uint8_t queue_push (queue_t* q, user_process_t* process);
+uint8_t queue_pop (queue_t* q);
+void queue_init (queue_t* q, uint8_t size);
+user_process_t* queue_front (queue_t *q);
