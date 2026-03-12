@@ -3,6 +3,6 @@
 int main2 (void ){   
 
     while (1){
-        user_printf ("hello from main2.c\n\r", 0x0);
+        user_printf ("((((((((((hello from main2.c\n\r", 0x0);
     }
 }

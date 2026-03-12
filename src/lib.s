@@ -19,7 +19,7 @@
 .equ ISPR, 0xE000E000+0x0100+0x100
 .equ ICPR, 0xE000E000+0x0100+0x180
 .equ IABR, 0xE000E000+0x0100+0x200
-
+.equ PSP, 0xfffffffd
 
 .equ KERNEL_SPACE_INIT, 0x20016000
 .equ USER_SPACE_INIT,   0x2000c000
@@ -203,6 +203,31 @@ SVC_Handler:
 .size SVC_Handler, . - SVC_Handler 
 /**************************SCV_Handler end**************************/ 
 
+/***********************BusFault_Handler start**********************/
+
+.section .text.BusFault_Handler
+.global BusFault_Handler
+.type BusFault_Handler, %function
+BusFault_Handler:
+    mov r0, r1
+    ldr r0, =0xfffffffd
+    cmp lr, r0
+    ite eq 
+    mrseq r0, psp
+    mrsne r0, msp
+    
+    /* find pc */
+    ldr r0, [r0, #24]
+    push {lr}
+    bl fault_handler_helper
+    pop {lr}
+
+    b .
+
+.size BusFault_Handler, . - BusFault_Handler
+
+/***********************BusFault_Handler end************************/
+
 
 
 
@@ -235,6 +260,24 @@ __asm__get_BASEPRI:
     bx lr
 
 
+.global __asm__get_psp
+.type __asm__get_psp, %function
+__asm__get_psp:
+    /* r0 contains the address of process->BASEPRI */
+    mrs r1, psp
+    str r1, [r0]
+
+    bx lr
+
+.global __asm__get_msp
+.type __asm__get_msp, %function
+__asm__get_msp:
+    /* r0 contains the address of process->BASEPRI */
+    mrs r1, msp 
+    str r1, [r0]
+
+    bx lr
+
 .global __asm__set_psp
 .type __asm__set_psp, %function 
 __asm__set_psp:
@@ -242,12 +285,19 @@ __asm__set_psp:
     msr psp, r0
     bx lr
 
-
 .global __asm__set_msp
 .type __asm__set_msp, %function
 __asm__set_msp:
     /* r0 contains the argument*/
     msr msp, r0
+    bx lr
+
+.global __asm__get_control
+.type __asm__get_control, %function
+__asm__get_control:
+    /* r0 contains the argument*/
+    mrs r11, control 
+    str r1, [r0]
     bx lr
 
 .global __asm__switch_to_usermode

@@ -91,15 +91,6 @@ MemManage_Handler :
 .size MemManage_Handler, . - MemManage_Handler
 
 
-/************************ Default_Handler start**********************/
-.section .text.BusFault_handler
-.global BusFault_Handler
-.type BusFault_Handler, %function
-BusFault_Handler :
-    B .
-
-.size BusFault_Handler, . - BusFault_Handler
-
 
 /************************ Default_Handler start**********************/
 .section .text.UsageFault_handler

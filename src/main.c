@@ -37,6 +37,15 @@ int main() {
         while (1);
     }
 
+    /******************** fault handler init ***************************/
+    
+    // enable faults (without this any fault = hardfault)
+    SCB->SHCSR |= SCB_SHCSR_BUSFAULTENA_Msk;
+//    SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk;
+//    SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
+
+
+
     /* init syscall table */
     Syscall_Table[0] =  syscall__printf;
     Syscall_Table[1] =  syscall__scanf;
@@ -73,7 +82,9 @@ int main() {
         psp_val -= stack_size;
         msp_val -= stack_size;
     }
-    
+ 
+
+
     /* start the processes */
     launch_process();
     /* should never fall to this section */

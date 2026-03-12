@@ -56,6 +56,15 @@ void schedular(void) {
 
 }
 
+void fault_handler_helper (uint32_t pc){
+    printf ("busdault !!\n\r", 0x0);
+    printf ("busfault status reg -> %\n\r", (uint32_t)(&SCB->CFSR));
+
+    if (SCB->CFSR & SCB_CFSR_BFARVALID_Msk)
+        printf ("busfault address -> %\n\r", (uint32_t)(&SCB->BFAR));
+    printf ("instruction that caused busfault -> %\n\r", (uint32_t)(&pc));
+}
+
 uint32_t strlen (const char *msg){
     
     int i=0;
