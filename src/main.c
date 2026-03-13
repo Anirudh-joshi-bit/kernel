@@ -40,7 +40,7 @@ int main() {
     /******************** fault handler init ***************************/
     
     // enable faults (without this any fault = hardfault)
-//    SCB->SHCSR |= SCB_SHCSR_BUSFAULTENA_Msk;
+    SCB->SHCSR |= SCB_SHCSR_BUSFAULTENA_Msk;
     SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk;
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
 

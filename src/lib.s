@@ -16,6 +16,8 @@
 .equ BusFault_Identifier, 0x0
 .equ MemManage_Identifier, 0x1
 .equ UsageFault_Identifier, 0x2
+.equ FAULT_IN_USERPROC,     0x0 
+.equ FAULT_IN_KERNEL,       0x1
 
 
 /*************************NVIC_REG address*******************/
@@ -208,16 +210,19 @@ SVC_Handler:
 
 /***********************BusFault_Handler start**********************/
 
+// r0 -> pc, r1 -> fault type, r2 -> fault in kernel / userproc
 .section .text.BusFault_Handler
 .global BusFault_Handler
 .type BusFault_Handler, %function
 BusFault_Handler:
     ldr r0, =0xfffffffd
     cmp lr, r0
-    ite eq 
+    ittee eq 
     mrseq r0, psp
+    moveq r2, FAULT_IN_USERPROC// third argument to faulthandler helper
     mrsne r0, msp
-    
+    movne r2, FAULT_IN_KERNEL // third argument to faulthandler helper
+
     /* find pc */
     ldr r0, [r0, #24]
     mov r1, BusFault_Identifier
@@ -225,7 +230,7 @@ BusFault_Handler:
     bl fault_handler_helper
     pop {lr}
 
-    b .
+    bx lr
 
 .size BusFault_Handler, . - BusFault_Handler
 
@@ -239,9 +244,12 @@ BusFault_Handler:
 MemManage_Handler:
     ldr r0, =0xfffffffd 
     cmp lr, r0 
-    ite eq 
+
+    ittee eq 
     mrseq r0, psp
+    moveq r2, FAULT_IN_USERPROC// third argument to faulthandler helper
     mrsne r0, msp
+    movne r2, FAULT_IN_KERNEL // third argument to faulthandler helper
     
     /* find pc */
     ldr r0, [r0, #24]
@@ -250,7 +258,7 @@ MemManage_Handler:
     bl fault_handler_helper
     pop {lr}
 
-    b .
+    bx lr
 
 .size MemManage_Handler, . - MemManage_Handler
 
@@ -264,9 +272,12 @@ MemManage_Handler:
 UsageFault_Handler:
     ldr r0, =0xfffffffd 
     cmp lr, r0 
-    ite eq 
+
+    ittee eq 
     mrseq r0, psp
+    moveq r2, FAULT_IN_USERPROC// third argument to faulthandler helper
     mrsne r0, msp
+    movne r2, FAULT_IN_KERNEL // third argument to faulthandler helper
     
     /* find pc */
     ldr r0, [r0, #24]
@@ -274,8 +285,8 @@ UsageFault_Handler:
     push {lr}
     bl fault_handler_helper
     pop {lr}
-
-    b .
+    
+    bx lr
 
 .size UsageFault_Handler, . - UsageFault_Handler
 

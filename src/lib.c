@@ -5,39 +5,6 @@ extern queue_t ready_queue;
 
 void schedular(void) {
 
-  //  uint32_t state_process1 = *((uint32_t*)(&process[0]) + (SIZE_PROCESS -
-  //  4)/4); uint32_t state_process2 = *((uint32_t*)(&process[1]) +
-  //  (SIZE_PROCESS - 4)/4);
-  /* both the process cannot be waiting at the same time
-   * both the process cannot be running at the same time
-   * if one process is waiting -> then pick it
-   * if one process is in io -> pick the other one
-   *
-   * implement io state once threading is done.....
-   *
-   *    as of now, there are only two states 1. running state,
-   *                                         2. running state
-   *
-   * change the below code in future
-   * code assumes that if one process is in waiting state ->other process must
-   * be running
-   */
-  //    user_process_t* picked = NULL;
-  //    user_process_t* run = NULL;
-  //    if (state_process1 == RUNNING_STATE){
-  //        picked = &process[1];
-  //        run = &process[0];
-  //    }
-  //    else {
-  //        picked = &process[0];
-  //        run = &process[1];
-  //    }
-  //
-  //    picked-> state = ~(picked->state);
-  //    run-> state = ~(run->state);
-  //
-  //    *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t) (picked);
-
   /* Round Robin (FCFS + time slice)*/
   user_process_t *picked_process = NULL;
   user_process_t *running_process = *(user_process_t **)(RUNNING_PROCESS_AD);
@@ -49,20 +16,28 @@ void schedular(void) {
     return;
 
   *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t)(picked_process);
-  picked_process->state = RUNNING_STATE;
-  running_process->state = READY_STATE;
 
-  queue_push(&ready_queue, running_process);
+  /* if the running process is suspended -> donot push it into the
+   * ready queue !!!! .. user process will be suspended if a fault
+   * occures (done by fault handler)
+   */
+
+  if (running_process->state != SUSPEND_STATE) {
+    queue_push(&ready_queue, running_process);
+    running_process->state = READY_STATE;
+  }
+
+  picked_process->state = RUNNING_STATE;
 }
 
-void fault_handler_helper(uint32_t pc, uint8_t fault_identifier) {
+void fault_handler_helper(uint32_t pc, uint8_t fault_identifier,
+                          uint32_t fault_place) {
 
   /* bus fault diagnosis */
   if (fault_identifier == BUSFAULT_IDENTIFIER) {
     printf("busdault !!\n\r", 0x0);
     if (SCB->CFSR & SCB_CFSR_BFARVALID_Msk)
       printf("busfault address -> %\n\r", (uint32_t)(&SCB->BFAR));
-
   }
 
   /* MemManagement diagnosis */
@@ -84,25 +59,44 @@ void fault_handler_helper(uint32_t pc, uint8_t fault_identifier) {
 
   printf("configrable fault status reg (SCB->CFSR) => %\n\r",
          (uint32_t)(&SCB->CFSR));
-  printf ("PC -> %\n\r", (uint32_t)&pc);
+  printf("PC -> %\n\r", (uint32_t)&pc);
   printf("instruction that caused the fault-> %\n\r", (uint32_t)(&instruction));
+
+  /* KERNEL PANIC if fault in kernel
+   * PROCESSES TERMINATION if fault in user process */
+
+  if (fault_place == FAULT_IN_KERNEL) {
+    printf("\n\n\rKERNEL PANIC......\n\n\r", 0x0);
+    while (1)
+      ;
+  }
+    /* change state from running to suspend and set pendsv */
+  else if (fault_place == FAULT_IN_USERPROC) {
+    printf("terminating user process...\n\r", 0x0);
+    printf ("reason -> fault", 0x0);
+    
+    (*(user_process_t **)(RUNNING_PROCESS_AD)) -> state = SUSPEND_STATE;
+    
+    /* trigger context switching*/
+    PendSV_Handler();
+  }
 }
 
-void HardFault_Handler_helper (uint32_t pc){
+void HardFault_Handler_helper(uint32_t pc) {
 
-    uint32_t instruction = *(uint32_t *)(pc);
+  uint32_t instruction = *(uint32_t *)(pc);
 
-    printf ("HARD_FAULT !!!\n\r", 0x0);
-    printf ("Hard Fault Status Register -> %\n\r", (uint32_t)(&SCB->HFSR));
-    printf ("PC -> %\n\r", (uint32_t)(&pc));
-    printf ("instruction that triggered HardFault -> %\n\r", (uint32_t)&instruction);
-
+  printf("HARD_FAULT !!!\n\r", 0x0);
+  printf("Hard Fault Status Register -> %\n\r", (uint32_t)(&SCB->HFSR));
+  printf("PC -> %\n\r", (uint32_t)(&pc));
+  printf("instruction that triggered HardFault -> %\n\r",
+         (uint32_t)&instruction);
 }
 
-/* 
- * hardfault and nmi handlers are implemented in asm as the stack might be corrupted 
- * using c for handling these faults can access the stack and lead the kernel into 
- * lock up state 
+/*
+ * hardfault and nmi handlers are implemented in asm as the stack might be
+ * corrupted using c for handling these faults can access the stack and lead the
+ * kernel into lock up state
  *
  */
 

@@ -3,7 +3,10 @@
 #define MAIN1_PROCESS_NUM               0
 #define MAIN2_PROCESS_NUM               1
 #define READY_STATE                     00
-#define RUNNING_STATE                   ~READY_STATE
+#define RUNNING_STATE                   01
+#define SUSPEND_STATE                   02
+#define FAULT_IN_USERPROC               00 
+#define FAULT_IN_KERNEL                 01
 #define KERNEL_SPACE_INIT               0x20016000
 #define USER_SPACE_INIT                 0x2000c000  
 #define SIZE_PROCESS                    15*4
