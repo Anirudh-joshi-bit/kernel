@@ -6,45 +6,10 @@
 .global Reset_Handler
 .type Reset_Handler, %function
 
+
 Reset_Handler:                           
-    LDR r0, =_sdata                     // _sdata in sram
-    LDR r1, =_edata                     // _edata in sram
-    LDR r2, =_sidata                    // _sidata in flash
-
-    B copy
-
-copy:
-    CMP r0, r1
-    BLT copy_helper
-
-    // init .bss with 0
-    LDR r0, =_sbss                       // _sbss present in sram
-    LDR r1, =_ebss                       // _ebss present in sram
-    MOV r2, #0 
-
-    B init_zero
-
-copy_helper:
-    LDR r3, [r2], #4 
-    STR r3, [r0], #4 
-
-    B copy
-
-init_zero:
-    CMP r0, r1
-    BLT init_zero_helper
-    
-    B call_entry
-
-
-init_zero_helper:
-    STR r2, [r0], #4 
-    B init_zero
-                
-
-call_entry:
+    BL resetHandlerHelper
     B main
-
 hang:
     B .
 

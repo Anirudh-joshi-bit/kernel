@@ -1,0 +1,14 @@
++usart driver (printf)
++3 states running, ready, suspend
++user space, kernel space separation
++kernel envoke regularly by systick interrupt
++context switching in pendsv
++system call (svc)
++ready queue
++round robin schedular
++multiple processes (not only 2)
++fault diagnosis (logging, pc)
++kernel panic (if fault happens in kernel code)
++user process suspend (if fault occures in user process)
++hardfault handler (logging, pc, instruction, halt)
+

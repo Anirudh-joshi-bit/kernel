@@ -8,8 +8,12 @@ MEMORY
 
 SECTIONS
 {
+    /* . = vma*/
+/* kernel space */
+
     .isr_vector :
     {
+        _sFLASHKernelSpace = .;
         KEEP(*(.isr_vector))
     } > FLASH
 
@@ -33,6 +37,7 @@ SECTIONS
     .data :
     {
         _sdata = .;
+        _sSRAMKernelSPACE = .;
         *(.data*)
         _edata = .;
     } > RAM AT > FLASH
@@ -45,6 +50,41 @@ SECTIONS
         _ebss = .;
     } > RAM
 
+    _FLASHKernelSpaceSize = SIZEOF (.isr_vector) + SIZEOF (.text) + 
+                            SIZEOF (.rodata) + SIZEOF (.data);
+    _SRAMKernelSpaceSize = SIZEOF (.bss) + SIZEOF (.data);
+
+/*user space*/
+
+    .usertext :
+    {
+        _sFLASHUserSpace = .;
+        *(.usertext*)
+    }> FLASH
+    .userrodata :
+    {   
+        *(.userrodata*)
+    }>FALSH
+
+    _siuserdata = LOADADDR (.userdata);
+
+    .userdata :
+    {
+        _sSRAMUserSpace = .;
+        _suserdata = .;
+        *(.userdata*)
+        _euserdata = .;
+    }> RAM AT > FLASH
+    .userbss (NOLOAD) :
+    {
+        _suserbss = .;
+        *(.userbss*)
+        _euserbss = .;
+    }> RAM
+
+    _FLASHUserSpaceSize = SIZEOF (.usertext) + SIZEOF (.userrodata) + SIZEOF (.userdata);
+    _SRAMUserSpaceSize = SIZEOF (.userbss) + SIZEOF (.userdata);
+    
     _estack = ORIGIN(RAM) + LENGTH(RAM);
 }
 

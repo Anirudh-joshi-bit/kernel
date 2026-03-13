@@ -1,7 +1,50 @@
 #include "../include/commons.h"
+#include <stdint.h>
+
+/*linker script symbols*/
+extern uint32_t _sdata;
+extern uint32_t _edata;
+extern uint32_t _sidata;
+extern uint32_t _sbss;
+extern uint32_t _ebss;
+
+extern uint32_t _siuserdata;
+extern uint32_t _suserdata;
+extern uint32_t _euserdata;
+extern uint32_t _suserbss;
+extern uint32_t _euserbss;
 
 extern user_process_t process[MAX_PROCESS_NUM];
 extern queue_t ready_queue;
+
+void resetHandlerHelper(void) {
+  uint32_t dest = (uint32_t)&_sdata;
+  uint32_t dest_end = (uint32_t)&_edata;
+  uint32_t src = (uint32_t)&_sidata;
+
+  /*copy data from data section to ram
+   * init .bss section*/
+  for (uint32_t i = dest; i <= dest_end; i += 4) {
+    *(uint32_t *)(i) = *(uint32_t *)(src);
+    src += 4;
+  }
+
+  dest = (uint32_t)&_suserdata;
+  dest_end = (uint32_t)&_euserdata;
+  src = (uint32_t)&_siuserdata;
+
+  for (uint32_t i = dest; i <= dest_end; i += 4) {
+    *(uint32_t *)(i) = *(uint32_t *)(src);
+    src += 4;
+  }
+
+  for (uint32_t i = (uint32_t)&_sbss; i <= (uint32_t)&_ebss; i+=4){
+        *(uint32_t *)(i) = 0;
+  }
+  for (uint32_t i = (uint32_t)&_suserbss; i <= (uint32_t)&_euserbss; i+=4){
+        *(uint32_t *)(i) = 0;
+  }
+}
 
 void schedular(void) {
 
@@ -70,13 +113,13 @@ void fault_handler_helper(uint32_t pc, uint8_t fault_identifier,
     while (1)
       ;
   }
-    /* change state from running to suspend and set pendsv */
+  /* change state from running to suspend and set pendsv */
   else if (fault_place == FAULT_IN_USERPROC) {
     printf("terminating user process...\n\r", 0x0);
-    printf ("reason -> fault", 0x0);
-    
-    (*(user_process_t **)(RUNNING_PROCESS_AD)) -> state = SUSPEND_STATE;
-    
+    printf("reason -> fault", 0x0);
+
+    (*(user_process_t **)(RUNNING_PROCESS_AD))->state = SUSPEND_STATE;
+
     /* trigger context switching*/
     PendSV_Handler();
   }
@@ -100,7 +143,7 @@ void HardFault_Handler_helper(uint32_t pc) {
  *
  */
 
-uint32_t strlen(const char *msg) {
+uint32_t _strlen(const char *msg) {
 
   int i = 0;
   while (msg[i++] != '\0')
@@ -156,8 +199,9 @@ char *hex_str(uint32_t value, char *out) {
 void printf(const char *msg, uint32_t address) {
 
   uint32_t value = *((uint32_t *)address);
+  uint32_t msg_size = _strlen(msg);
 
-  if (strlen(msg) + 9 > MAX_STR_SIZE) {
+  if (msg_size + 9 > MAX_STR_SIZE) {
     __usart1_print("too large error message !!\n\r", MAX_STR_SIZE);
     return;
   }
@@ -168,7 +212,7 @@ void printf(const char *msg, uint32_t address) {
   int p = 0, q = 0;
   bool single_sub = false;
 
-  for (; i < strlen(msg); i++) {
+  for (; i < msg_size; i++) {
 
     if (msg[i] == '%' && !single_sub) {
       hex_str(value, hex);
@@ -182,7 +226,7 @@ void printf(const char *msg, uint32_t address) {
       __msg[q++] = msg[p++];
   }
   __msg[q] = '\0';
-  __usart1_print(__msg, strlen(__msg));
+  __usart1_print(__msg, _strlen(__msg));
 }
 
 void syscall__printf(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {

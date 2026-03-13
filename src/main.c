@@ -83,7 +83,7 @@ int main() {
         msp_val -= stack_size;
     }
  
-
+//    *(uint32_t*) (0xffffffff) = 5;
 
     /* start the processes */
     launch_process();

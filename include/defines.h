@@ -23,6 +23,8 @@
 #define MEMMANAGE_IDENTIFIER            0x1
 #define USAGEFAULT_IDENTIFIER           0x2
 
+#define KERNELINIT_SIZE                 8*1024
+
 
 // this structure will only be used in the previllaged mode !!! 
 typedef struct user_process_t {

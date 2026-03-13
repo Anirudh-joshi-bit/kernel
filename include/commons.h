@@ -5,6 +5,26 @@
 #include "device/stm32f401xe.h"
 #include "defines.h"
 
+// linker script symbols ->
+extern uint32_t _estack;
+
+extern uint32_t _sFLASHKernelSpace;
+extern uint32_t _sSRAMKernelSPACE;
+extern uint32_t _FLASHKernelSpaceSize;
+extern uint32_t _sFLASHKernelSpace;
+
+extern uint32_t _sFLASHUserSpace;
+extern uint32_t _sSRAMUserSpace;
+extern uint32_t _FLASHUserSpaceSize; 
+extern uint32_t _SRAMUserSpaceSize;
+
+#define _sUserStack  USER_SPACE_INIT - TOTAL_STACK_SIZE;
+#define _sKernelStack  USER_SPACE_INIT;
+#define _UserStackSize  TOTAL_STACK_SIZE;
+#define _KernelStackSize  KERNELINIT_SIZE+TOTAL_STACK_SIZE;
+// this makes 6 regions
+
+
 // user process entry points
 void main1(void);
 void main2(void);
@@ -27,7 +47,7 @@ void __asm__switch_to_usermode (void);
 
 void __usart1_init (void);
 void printf (const char* msg, uint32_t addr);
-uint32_t strlen (const char *msg);
+uint32_t _strlen (const char *msg);
 uint32_t erase_flash (uint32_t address);
 uint32_t flash_write (uint32_t dest, const char* src, uint32_t size, uint32_t delay);
 void delay (uint32_t  count);
