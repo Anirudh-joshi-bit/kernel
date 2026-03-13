@@ -72,38 +72,6 @@ NMI_Handler :
 
 
 /************************ Default_Handler start**********************/
-.section .text.HardFault_handler
-.global HardFault_Handler
-.type HardFault_Handler, %function
-HardFault_Handler :
-    B .
-
-.size HardFault_Handler, . - HardFault_Handler
-
-
-/************************ Default_Handler start**********************/
-.section .text.MemManage_handler
-.global MemManage_Handler
-.type MemManage_Handler, %function
-MemManage_Handler :
-    B .
-
-.size MemManage_Handler, . - MemManage_Handler
-
-
-
-/************************ Default_Handler start**********************/
-.section .text.UsageFault_handler
-.global UsageFault_Handler
-.type UsageFault_Handler, %function
-UsageFault_Handler :
-    B .
-
-.size UsageFault_Handler, . - UsageFault_Handler
-
-
-
-/************************ Default_Handler start**********************/
 .section .text.DebugMon_handler
 .global DenubMon_Handler
 .type DebugMon_Handler, %function

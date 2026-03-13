@@ -6,11 +6,6 @@
 #define RUNNING_STATE                   ~READY_STATE
 #define KERNEL_SPACE_INIT               0x20016000
 #define USER_SPACE_INIT                 0x2000c000  
-//#define M2_USER_ST_INIT                 0x20007000
-//#define M1_USER_ST_INIT                 0x2000c000
-//#define USER_SPACE                      0x2000c000
-//#define M2_KERNEL_ST_INIT               0x20011c00
-//#define M1_KERNEL_ST_INIT               0x20017800
 #define SIZE_PROCESS                    15*4
 #define RUNNING_PROCESS_AD KERNEL_SPACE_INIT+0x4    // stores address of running process
 #define PICKED_PROCESS_AD RUNNING_PROCESS_AD+0x4    // stores address of picked process
@@ -19,9 +14,12 @@
 #define MAX_STR_SIZE                    100
 #define MAX_SYSCALL_NUM                 10
 #define SYSCALL_TABLE_AD                KERNEL_SPACE_INIT+0xc
-
 #define MAX_PROCESS_NUM                 20
 #define TOTAL_STACK_SIZE                40 * 1024       // 40 KB
+#define BUSFAULT_IDENTIFIER             0x0
+#define MEMMANAGE_IDENTIFIER            0x1
+#define USAGEFAULT_IDENTIFIER           0x2
+
 
 // this structure will only be used in the previllaged mode !!! 
 typedef struct user_process_t {

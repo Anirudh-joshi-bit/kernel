@@ -13,6 +13,9 @@
 /************************* defines ************************************/
 .equ READY_STATE, 0x0
 .equ RUNNING_STATE, ~READY_STATE
+.equ BusFault_Identifier, 0x0
+.equ MemManage_Identifier, 0x1
+.equ UsageFault_Identifier, 0x2
 
 
 /*************************NVIC_REG address*******************/
@@ -209,7 +212,6 @@ SVC_Handler:
 .global BusFault_Handler
 .type BusFault_Handler, %function
 BusFault_Handler:
-    mov r0, r1
     ldr r0, =0xfffffffd
     cmp lr, r0
     ite eq 
@@ -218,6 +220,7 @@ BusFault_Handler:
     
     /* find pc */
     ldr r0, [r0, #24]
+    mov r1, BusFault_Identifier
     push {lr}
     bl fault_handler_helper
     pop {lr}
@@ -229,6 +232,105 @@ BusFault_Handler:
 /***********************BusFault_Handler end************************/
 
 
+/***********************MemManage_Handler start************************/
+.section .text.MemManage_Handler
+.global MemManage_Handler
+.type MemManage_Handler, %function
+MemManage_Handler:
+    ldr r0, =0xfffffffd 
+    cmp lr, r0 
+    ite eq 
+    mrseq r0, psp
+    mrsne r0, msp
+    
+    /* find pc */
+    ldr r0, [r0, #24]
+    mov r1, MemManage_Identifier
+    push {lr}
+    bl fault_handler_helper
+    pop {lr}
+
+    b .
+
+.size MemManage_Handler, . - MemManage_Handler
+
+/***********************MemManage_Handler end************************/
+
+/***********************UsageFault_Handler start*********************/
+
+.section .text.UsageFault_Handler
+.global UsageFault_Handler 
+.type UsageFault_Handler, %function
+UsageFault_Handler:
+    ldr r0, =0xfffffffd 
+    cmp lr, r0 
+    ite eq 
+    mrseq r0, psp
+    mrsne r0, msp
+    
+    /* find pc */
+    ldr r0, [r0, #24]
+    mov r1, UsageFault_Identifier
+    push {lr}
+    bl fault_handler_helper
+    pop {lr}
+
+    b .
+
+.size UsageFault_Handler, . - UsageFault_Handler
+
+
+
+/***********************UsageFault_Handler end*********************/
+
+
+/**********************HardFault_Handler start************************/
+/* there is no "helper" function to handle hardfault
+ *
+ * DONOT use printf (we dont want LOCKUP state)..
+ * if stack is corrupted or any other fault occured in hardfault handler ->
+ * lockup !!
+ *
+ * do the minimum operation in the hardfault and nmi handler
+ *
+
+    HardFault is the endpoint of our kernel... there is no returning from this !!!
+    problem with printing inside HardFault_Handler -> if stack is corrupted calling
+    printf function will result in lockup state !!!!
+
+    soln... as Hardfault is the end point, we can safely change the msp to any valid 
+    address ..... change the msp to end of SRAM and call printf function
+    we will not use psp => no need to alter it
+ */
+
+.section .text.HardFault_Handler
+.global HardFault_Handler
+.type HardFault_Handler, %function
+HardFault_Handler:
+
+    ldr r0, =0xfffffffd 
+    cmp lr, r0 
+    ite eq 
+    mrseq r0, psp
+    mrsne r0, msp
+    
+    /* find pc */
+    ldr r0, [r0, #24]
+    
+    /* after getting the pc, msp can be safely altered !!!*/
+    ldr r1, =_estack
+    msr msp, r1
+
+    push {lr}
+    bl HardFault_Handler_helper
+    pop {lr}
+
+    b .
+
+.size HardFault_Handler, . - HardFault_Handler
+
+
+/**********************HardFault_Handler end**************************/
 
 
 .global __asm__get_PRIMASK
