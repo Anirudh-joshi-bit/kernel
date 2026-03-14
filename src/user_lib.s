@@ -2,7 +2,7 @@
 .cpu cortex-m4
 .thumb 
 
-.section .text.user_lib_s
+.section .usertext
 .global user_printf
 .type user_printf, %function
 user_printf:

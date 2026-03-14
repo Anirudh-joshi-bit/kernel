@@ -11,4 +11,26 @@
 +kernel panic (if fault happens in kernel code)
 +user process suspend (if fault occures in user process)
 +hardfault handler (logging, pc, instruction, halt)
++mpu configured....
+    accessing kernel space in user space => memmanage fault -> terminates process 
+    accessing illegal memory in user -> mem + bus fault => hardfault 
+    accessing illegal memory in kernel-> bus fault =>  kernel panic
+
+* improvement >now system is crashing if user process accesses ilegal memo-> resolve this
+*   bug     -> when user access kernel code -> memorymanage fault but after few seconds 
+            ie after about 100s prints, Hardfault is triggering !!! (dont know why)
+            
+            suspection ->
+                        1. as after memmanage fault -> the process is terminated, and 
+                        after some 100s context switching, hardfault triggered ->
+                        something might be wrong with the CIRCULAR QUEUE 
+                        
+                        2. hardfault handler logs what was the pc, inst when Hardfault
+                        triggered ... pc was in PRINTF function ... there might be some 
+                        illegal memory access 
+
+
+
+
+
 

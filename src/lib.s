@@ -413,11 +413,14 @@ __asm__get_control:
     str r1, [r0]
     bx lr
 
-.global __asm__switch_to_usermode
-.type   __asm__switch_to_usermode, %function 
- __asm__switch_to_usermode:
+.section .usertext.launch_main1
+.global __asm__launch_main1
+.type   __asm__launch_main1, %function 
+ __asm__launch_main1:
 
     mov r0, #3 
     msr control, r0 
     isb
-    bx lr
+    
+    bl main1
+

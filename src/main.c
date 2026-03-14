@@ -12,6 +12,8 @@ user_process_t process [MAX_PROCESS_NUM];
 void (*process_pc[MAX_PROCESS_NUM]) (void);
 queue_t ready_queue;
 
+USER_CODE int user_launch_process ();
+
 
 /* set the value of this variable according to the number of processes you have */
 uint8_t  process_count = 4;
@@ -51,9 +53,10 @@ int main() {
     Syscall_Table[1] =  syscall__scanf;
     *(uint32_t *)(SYSCALL_TABLE_AD) = (uint32_t)(Syscall_Table);
     
-    uint32_t psp_val = USER_SPACE_INIT;
-    uint32_t msp_val = KERNEL_SPACE_INIT;
-    uint32_t stack_size = TOTAL_STACK_SIZE / process_count;
+    uint32_t psp_val = USER_STACK_INIT;
+    uint32_t msp_val = KERNEL_STACK_INIT;
+    uint32_t user_stack_size = USER_STACK_SIZE / process_count;
+    uint32_t kernel_stack_size = KERNEL_STACK_SIZE / process_count;
 
     /* fill the pcs */
     process_pc [0] = main1;
@@ -79,11 +82,14 @@ int main() {
 
     for (uint8_t i=0; i<process_count; i++){
         make_process (&process[i], psp_val, msp_val, i);
-        psp_val -= stack_size;
-        msp_val -= stack_size;
+        psp_val -= user_stack_size;
+        msp_val -= kernel_stack_size;
     }
  
 //    *(uint32_t*) (0xffffffff) = 5;
+
+    /*impose user restriction*/
+    mpu_setup ();
 
     /* start the processes */
     launch_process();
@@ -145,7 +151,7 @@ void  launch_process (void){
     SysTick->LOAD = 16000 - 1;
     SysTick->CTRL |= (SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk
             | SysTick_CTRL_ENABLE_Msk);
-    __asm__switch_to_usermode ();  
+
     // put the address of process1 in RUNNING_PROCESS_AD
     // change the state field in process
 
@@ -160,8 +166,7 @@ void  launch_process (void){
     for (uint8_t i=1; i<process_count; i++){
         process[i].state = READY_STATE;
     }
-
-
-    main1 ();
+ 
+    __asm__launch_main1();
 
 }

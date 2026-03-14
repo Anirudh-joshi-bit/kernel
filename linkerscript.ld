@@ -2,7 +2,7 @@ ENTRY(Reset_Handler)
 
 MEMORY
 {
-    FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 128K
+    FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 128K    /*change origin to 0x08020000*/
     RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 96K
 }
 
@@ -50,14 +50,14 @@ SECTIONS
         _ebss = .;
     } > RAM
 
-    _FLASHKernelSpaceSize = SIZEOF (.isr_vector) + SIZEOF (.text) + 
-                            SIZEOF (.rodata) + SIZEOF (.data);
-    _SRAMKernelSpaceSize = SIZEOF (.bss) + SIZEOF (.data);
+    _FLASHKernelSpaceSize = 64K ;
+    _SRAMKernelSpaceSize = 16K ;
 
 /*user space*/
 
     .usertext :
     {
+        . = ALIGN (64K);
         _sFLASHUserSpace = .;
         *(.usertext*)
     }> FLASH
@@ -70,11 +70,14 @@ SECTIONS
 
     .userdata :
     {
+        . = ORIGIN(RAM) + 16K;
+
         _sSRAMUserSpace = .;
         _suserdata = .;
         *(.userdata*)
         _euserdata = .;
     }> RAM AT > FLASH
+
     .userbss (NOLOAD) :
     {
         _suserbss = .;
@@ -82,8 +85,8 @@ SECTIONS
         _euserbss = .;
     }> RAM
 
-    _FLASHUserSpaceSize = SIZEOF (.usertext) + SIZEOF (.userrodata) + SIZEOF (.userdata);
-    _SRAMUserSpaceSize = SIZEOF (.userbss) + SIZEOF (.userdata);
+    _FLASHUserSpaceSize = 64K;
+    _SRAMUserSpaceSize = 16K ;
     
     _estack = ORIGIN(RAM) + LENGTH(RAM);
 }

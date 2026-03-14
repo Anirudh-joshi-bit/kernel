@@ -10,5 +10,5 @@
 #define USER_RODATA  __attribute__((section(".userrodata")))
 
 /**************** syscalls **************************/
-void user_printf (const char *string, uint32_t addr);
+USER_CODE void user_printf (const char *string, uint32_t addr);
 

@@ -11,17 +11,17 @@ extern uint32_t _estack;
 extern uint32_t _sFLASHKernelSpace;
 extern uint32_t _sSRAMKernelSPACE;
 extern uint32_t _FLASHKernelSpaceSize;
-extern uint32_t _sFLASHKernelSpace;
+extern uint32_t _SRAMKernelSpaceSize;
 
 extern uint32_t _sFLASHUserSpace;
 extern uint32_t _sSRAMUserSpace;
 extern uint32_t _FLASHUserSpaceSize; 
 extern uint32_t _SRAMUserSpaceSize;
 
-#define _sUserStack  USER_SPACE_INIT - TOTAL_STACK_SIZE;
-#define _sKernelStack  USER_SPACE_INIT;
-#define _UserStackSize  TOTAL_STACK_SIZE;
-#define _KernelStackSize  KERNELINIT_SIZE+TOTAL_STACK_SIZE;
+#define USER_STACK_END              0x20000000+32*1024
+#define KERNEL_STACK_END            0x20000000+64*1024
+#define USER_STACK_REGION_SIZE      32*1024
+#define KERNEL_STACK_REGION_SIZE    32*1024
 // this makes 6 regions
 
 
@@ -42,9 +42,10 @@ void __asm__get_FAULTMASK (uint32_t *addr);
 void __asm__get_BASEPRI (uint32_t *addr);
 void __asm__set_psp (uint32_t value);
 void __asm__set_msp (uint32_t value);
-void __asm__switch_to_usermode (void);
+void __asm__launch_main1 (void);
 
 
+void mpu_setup (void);
 void __usart1_init (void);
 void printf (const char* msg, uint32_t addr);
 uint32_t _strlen (const char *msg);

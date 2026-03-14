@@ -7,23 +7,30 @@
 #define SUSPEND_STATE                   02
 #define FAULT_IN_USERPROC               00 
 #define FAULT_IN_KERNEL                 01
-#define KERNEL_SPACE_INIT               0x20016000
-#define USER_SPACE_INIT                 0x2000c000  
+#define KERNELINIT_SIZE                 8*1024
+#define KERNEL_STACK_INIT               0x20018000-KERNELINIT_SIZE
+#define USER_STACK_INIT                 0x20000000+64*1024  
 #define SIZE_PROCESS                    15*4
-#define RUNNING_PROCESS_AD KERNEL_SPACE_INIT+0x4    // stores address of running process
+#define RUNNING_PROCESS_AD KERNEL_STACK_INIT+0x4    // stores address of running process
 #define PICKED_PROCESS_AD RUNNING_PROCESS_AD+0x4    // stores address of picked process
 #define RX_PIN                          9
 #define TX_PIN                          10 
 #define MAX_STR_SIZE                    100
 #define MAX_SYSCALL_NUM                 10
-#define SYSCALL_TABLE_AD                KERNEL_SPACE_INIT+0xc
+#define SYSCALL_TABLE_AD                KERNEL_STACK_INIT+0xc
 #define MAX_PROCESS_NUM                 20
-#define TOTAL_STACK_SIZE                40 * 1024       // 40 KB
+#define USER_STACK_SIZE                 32 * 1024       // 32 KB
+#define KERNEL_STACK_SIZE               24 * 1024       // 24 KB
 #define BUSFAULT_IDENTIFIER             0x0
 #define MEMMANAGE_IDENTIFIER            0x1
 #define USAGEFAULT_IDENTIFIER           0x2
 
-#define KERNELINIT_SIZE                 8*1024
+/* USER space definitions */
+
+#define USER_CODE    __attribute__((section(".usertext")))
+#define USER_DATA    __attribute__((section(".userdata")))
+#define USER_BSS     __attribute__((section(".userbss")))
+#define USER_RODATA  __attribute__((section(".userrodata")))
 
 
 // this structure will only be used in the previllaged mode !!! 

@@ -1,5 +1,2 @@
-nmi handler in asm only
-mpu setup
-
 mutex
 add delay, scanf syscalls into the kernel
