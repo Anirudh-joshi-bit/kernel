@@ -14,8 +14,11 @@ extern uint32_t _euserdata;
 extern uint32_t _suserbss;
 extern uint32_t _euserbss;
 
+
+/* important variable from main.c */
 extern user_process_t process[MAX_PROCESS_NUM];
 extern queue_t ready_queue;
+extern semaphore_t sem_usart1;
 
 void resetHandlerHelper(void) {
   uint32_t dest = (uint32_t)&_sdata;
@@ -38,11 +41,11 @@ void resetHandlerHelper(void) {
     src += 4;
   }
 
-  for (uint32_t i = (uint32_t)&_sbss; i <= (uint32_t)&_ebss; i+=4){
-        *(uint32_t *)(i) = 0;
+  for (uint32_t i = (uint32_t)&_sbss; i <= (uint32_t)&_ebss; i += 4) {
+    *(uint32_t *)(i) = 0;
   }
-  for (uint32_t i = (uint32_t)&_suserbss; i <= (uint32_t)&_euserbss; i+=4){
-        *(uint32_t *)(i) = 0;
+  for (uint32_t i = (uint32_t)&_suserbss; i <= (uint32_t)&_euserbss; i += 4) {
+    *(uint32_t *)(i) = 0;
   }
 }
 
@@ -130,43 +133,45 @@ void HardFault_Handler_helper(uint32_t pc) {
   uint32_t instruction = *(uint32_t *)(pc);
 
   printf("HARD_FAULT !!!\n\r", 0x0);
+  printf("configrable fault status reg (SCB->CFSR) => %\n\r",
+         (uint32_t)(&SCB->CFSR));
   printf("Hard Fault Status Register -> %\n\r", (uint32_t)(&SCB->HFSR));
   printf("PC -> %\n\r", (uint32_t)(&pc));
   printf("instruction that triggered HardFault -> %\n\r",
          (uint32_t)&instruction);
 }
 
-void mpu_setup (void){
+void mpu_setup(void) {
 
-    /*dissable mpu*/
-    MPU-> CTRL = 0;
+  /*dissable mpu*/
+  MPU->CTRL = 0;
 
-    /*region 0*/
-    MPU->RNR = 0;
-    MPU->RBAR = (uint32_t)(&_sFLASHUserSpace);
-    MPU->RASR =
-    (0 << MPU_RASR_XN_Pos) |          // Executable (XN = 0)
-    (0b110 << MPU_RASR_AP_Pos) |      // Privileged read-only user read-only
-    (15 << MPU_RASR_SIZE_Pos) |       // 64 KB region
-    MPU_RASR_ENABLE_Msk;
+  /*region 0*/
+  MPU->RNR = 0;
+  MPU->RBAR = (uint32_t)(&_sFLASHUserSpace);
+  MPU->RASR =
+      (0 << MPU_RASR_XN_Pos) |     // Executable (XN = 0)
+      (0b110 << MPU_RASR_AP_Pos) | // Privileged read-only user read-only
+      (15 << MPU_RASR_SIZE_Pos) |  // 64 KB region
+      MPU_RASR_ENABLE_Msk;
 
-    MPU->RNR = 1;
-    MPU->RBAR = (uint32_t)(&_sSRAMUserSpace);
-    MPU->RASR =
-    (1 << MPU_RASR_XN_Pos) |        // non Executable
-    (0b011 << MPU_RASR_AP_Pos) |    // privillage read write user read-write
-    (14 << MPU_RASR_SIZE_Pos) |     // 32 KB size
-    MPU_RASR_ENABLE_Msk;
+  MPU->RNR = 1;
+  MPU->RBAR = (uint32_t)(&_sSRAMUserSpace);
+  MPU->RASR =
+      (1 << MPU_RASR_XN_Pos) |     // non Executable
+      (0b011 << MPU_RASR_AP_Pos) | // privillage read write user read-write
+      (14 << MPU_RASR_SIZE_Pos) |  // 32 KB size
+      MPU_RASR_ENABLE_Msk;
 
-    MPU->RNR = 2;
-    MPU->RBAR = USER_STACK_END;
-    MPU->RASR =
-    (1 << MPU_RASR_XN_Pos) |        // non Executable
-    (0b011 << MPU_RASR_AP_Pos) |    // privillage read write user read-write
-    (14 << MPU_RASR_SIZE_Pos) |     // 32 KB size
-    MPU_RASR_ENABLE_Msk;   
+  MPU->RNR = 2;
+  MPU->RBAR = USER_STACK_END;
+  MPU->RASR =
+      (1 << MPU_RASR_XN_Pos) |     // non Executable
+      (0b011 << MPU_RASR_AP_Pos) | // privillage read write user read-write
+      (14 << MPU_RASR_SIZE_Pos) |  // 32 KB size
+      MPU_RASR_ENABLE_Msk;
 
-    MPU->CTRL = MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
+  MPU->CTRL = MPU_CTRL_PRIVDEFENA_Msk | MPU_CTRL_ENABLE_Msk;
 }
 
 uint32_t _strlen(const char *msg) {
@@ -257,7 +262,9 @@ void printf(const char *msg, uint32_t address) {
 
 void syscall__printf(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   //((user_process_t *) RUNNING_PROCESS_AD)-> state = IO_RUNNING_STATE;
+  semaphore_lock(&sem_usart1);
   printf((const char *)a, b);
+  semaphore_unock(&sem_usart1);
   //((user_process_t *) RUNNING_PROCESS_AD)-> state = RUNNING_STATE;
 }
 

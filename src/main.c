@@ -4,8 +4,10 @@
 /************************syscalls declaration*************************/
 void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
-
 void (*Syscall_Table [MAX_SYSCALL_NUM]) (uint32_t , uint32_t, uint32_t, uint32_t); 
+
+/* semaphores */
+semaphore_t sem_usart1;
 
 /* store the process struct and pc of each process */
 user_process_t process [MAX_PROCESS_NUM];
@@ -16,12 +18,15 @@ USER_CODE int user_launch_process ();
 
 
 /* set the value of this variable according to the number of processes you have */
-uint8_t  process_count = 4;
+uint8_t  process_count = 7;
 
 void main1 (void);          // this is must (atleast one process)
 void main2 (void);
 void main3 (void);
 void main4 (void);
+void main5 (void);
+void main6 (void);
+void main7 (void);
 
 void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind);
 void launch_process (void);
@@ -31,8 +36,9 @@ int main() {
     SCB->SHP[10] = 0xff;    // set the PendSV to be the lowest priority...
 
     /* some init code */
-    __usart1_init();
+    __usart1_init ();
     queue_init (&ready_queue, process_count);
+    semaphore_init (&sem_usart1, 1);
 
     if (process_count < 1 || process_count > MAX_PROCESS_NUM){
         printf ("ERROR in the number of process ....\n\r", 0x0);
@@ -45,8 +51,6 @@ int main() {
     SCB->SHCSR |= SCB_SHCSR_BUSFAULTENA_Msk;
     SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk;
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
-
-
 
     /* init syscall table */
     Syscall_Table[0] =  syscall__printf;
@@ -63,27 +67,17 @@ int main() {
     process_pc [1] = main2;
     process_pc [2] = main3;
     process_pc [3] = main4;
-//    process_pc [4] = main5;
-//    process_pc [5] = main6;
-//    process_pc [6] = main7;
-//    process_pc [7] = main8;
-//    process_pc [8] = main9;
-//    process_pc [9] = main10;
-//    process_pc [10] = main11;
-//    process_pc [11] = main12;
-//    process_pc [12] = main13;
-//    process_pc [13] = main14;
-//    process_pc [14] = main15;
-//    process_pc [15] = main16;
-//    process_pc [16] = main17;
-//    process_pc [17] = main18;
-//    process_pc [18] = main19;
-//    process_pc [19] = main20;
+    process_pc [4] = main5;
+    process_pc [5] = main6;
+    process_pc [6] = main7;
 
     for (uint8_t i=0; i<process_count; i++){
         make_process (&process[i], psp_val, msp_val, i);
         psp_val -= user_stack_size;
         msp_val -= kernel_stack_size;
+        /* make stack pointers word aligned */
+        psp_val &= ~(3);
+        msp_val &= ~(3);
     }
  
 //    *(uint32_t*) (0xffffffff) = 5;

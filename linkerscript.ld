@@ -37,7 +37,7 @@ SECTIONS
     .data :
     {
         _sdata = .;
-        _sSRAMKernelSPACE = .;
+        _sSRAMKernelSpace = .;
         *(.data*)
         _edata = .;
     } > RAM AT > FLASH
@@ -64,7 +64,7 @@ SECTIONS
     .userrodata :
     {   
         *(.userrodata*)
-    }>FALSH
+    }>FLASH
 
     _siuserdata = LOADADDR (.userdata);
 

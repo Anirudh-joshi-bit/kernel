@@ -9,7 +9,7 @@
 extern uint32_t _estack;
 
 extern uint32_t _sFLASHKernelSpace;
-extern uint32_t _sSRAMKernelSPACE;
+extern uint32_t _sSRAMKernelSpace;
 extern uint32_t _FLASHKernelSpaceSize;
 extern uint32_t _SRAMKernelSpaceSize;
 
@@ -24,10 +24,6 @@ extern uint32_t _SRAMUserSpaceSize;
 #define KERNEL_STACK_REGION_SIZE    32*1024
 // this makes 6 regions
 
-
-// user process entry points
-void main1(void);
-void main2(void);
 
 // syscalls
 void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
@@ -56,3 +52,8 @@ uint8_t queue_push (queue_t* q, user_process_t* process);
 uint8_t queue_pop (queue_t* q);
 void queue_init (queue_t* q, uint8_t size);
 user_process_t* queue_front (queue_t *q);
+uint32_t queue_empty (queue_t* q);
+
+void semaphore_init (semaphore_t *sema, uint8_t value);
+void semaphore_lock (semaphore_t *sema);
+void semaphore_unock (semaphore_t *sema);

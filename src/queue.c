@@ -39,3 +39,6 @@ user_process_t* queue_front (queue_t *q){
     return q->processes [q->front];
 }
 
+uint32_t queue_empty (queue_t *q){
+    return q->front == -1;
+}

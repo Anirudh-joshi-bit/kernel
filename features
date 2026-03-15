@@ -31,6 +31,24 @@
 
 
 
+* semaphore added ....  
+* added waiting state ....
+    implementation -> if process 1 locks the semaphore ->   < semaphore.value -- >
+                        process 2 wants to access the CS -> as semaphore is already
+                        locked -> process will have to wait =>change the running 
+                        process state from RUNNING STATE to WAITINT STATE , 
+                        push the process into < semaphore waiting queue >,
+                        now call PendSV_Handler to preemption ....
+                        
+                        inside the schedular, donot push waiting state processes 
+                        into the ready queue... now waiting processes cannot get the 
+                        cpu until they are removed from the waiting queue and pushed 
+                        into the ready queue !!!
 
 
-
+        semaphore unlock -> <semaphore.value ++>    if after increament, the value is
+                        1, then semaphore is unlocked, meaning we need to pick one
+                        process from <semaphore.waiting_queue> (if not empty),
+                        pop from the <semaphore.waiting_queue> ,
+                        change the state from WAITING_STATE to READY_STATE,
+                        push the process to ready_queue

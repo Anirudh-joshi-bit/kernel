@@ -1,2 +1,1 @@
-mutex
-add delay, scanf syscalls into the kernel
+add delay, scanf syscall

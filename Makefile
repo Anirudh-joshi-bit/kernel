@@ -25,9 +25,7 @@ FLASH_BASE = 0x08000000
 # secto number = 0 for bootloader
 SECTOR_SIZE = 0x4000			
 SECTOR_NUMBER = 0
-FLASH_ADDRESS = $(shell printf "0x%X\n" $$(( $(FLASH_BASE) + $(SECTOR_SIZE) * $(SECTOR_NUMBER) )))
-
-
+FLASH_ADDRESS = $(shell printf "0x%X\n" $$(( $(FLASH_BASE) + $(SECTOR_SIZE) * $(SECTOR_NUMBER) ))
 
 C_SRC_FILES = $(wildcard $(SRC)/*.c)
 AS_SRC_FILES = $(wildcard $(SRC)/*.s)

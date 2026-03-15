@@ -178,7 +178,11 @@ SVC_Handler:
     /* r0, r1, r2, r3 stores the arguments of systemcall */
     push {r0, r1, r2, r3}
 
-    mrs r0, psp  /*assumption -> kernel will never call svc*/
+    tst lr, #4
+    ite eq
+    mrseq r0, msp
+    mrsne r0, psp
+
     add r0, #24 /* retrieve the old pc that is stacked*/
     ldr r1, [r0]
     sub r1, #2      /*move 2 bytes before to get the scv immidiate*/

@@ -5,6 +5,7 @@
 #define READY_STATE                     00
 #define RUNNING_STATE                   01
 #define SUSPEND_STATE                   02
+#define WAITING_STATE                   03
 #define FAULT_IN_USERPROC               00 
 #define FAULT_IN_KERNEL                 01
 #define KERNELINIT_SIZE                 8*1024
@@ -69,8 +70,16 @@ typedef struct user_process_t {
 
 /* queue -> stores the addresses of processes */
 typedef struct __queue_t {
-    user_process_t *processes [MAX_PROCESS_NUM];    
-    uint32_t size;
+    user_process_t *processes [30];    
+    uint8_t size;
     uint8_t front;
     uint8_t rare;
 }queue_t;
+
+typedef struct __semaphore_t {
+    uint32_t value;
+    queue_t waiting_queue;
+} semaphore_t;
+
+
+
