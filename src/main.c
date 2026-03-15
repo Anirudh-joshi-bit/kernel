@@ -18,7 +18,7 @@ USER_CODE int user_launch_process ();
 
 
 /* set the value of this variable according to the number of processes you have */
-uint8_t  process_count = 7;
+uint8_t  process_count = 10;
 
 void main1 (void);          // this is must (atleast one process)
 void main2 (void);
@@ -27,6 +27,7 @@ void main4 (void);
 void main5 (void);
 void main6 (void);
 void main7 (void);
+
 
 void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind);
 void launch_process (void);
@@ -51,6 +52,8 @@ int main() {
     SCB->SHCSR |= SCB_SHCSR_BUSFAULTENA_Msk;
     SCB->SHCSR |= SCB_SHCSR_USGFAULTENA_Msk;
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
+
+
 
     /* init syscall table */
     Syscall_Table[0] =  syscall__printf;

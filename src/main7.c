@@ -3,7 +3,7 @@
 USER_CODE int main7 (void){
     
     while (1){
-        user_printf ("**********hello from main7.c\n\r", 0x0);
+        user_printf ("@@@@@@@@@@hello from main5.c\n\r", 0x0);
 
     }
 
