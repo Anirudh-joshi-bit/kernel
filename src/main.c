@@ -18,7 +18,7 @@ USER_CODE int user_launch_process ();
 
 
 /* set the value of this variable according to the number of processes you have */
-uint8_t  process_count = 10;
+uint8_t  process_count = 3;
 
 void main1 (void);          // this is must (atleast one process)
 void main2 (void);

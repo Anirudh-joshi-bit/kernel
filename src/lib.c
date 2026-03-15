@@ -14,7 +14,6 @@ extern uint32_t _euserdata;
 extern uint32_t _suserbss;
 extern uint32_t _euserbss;
 
-
 /* important variable from main.c */
 extern user_process_t process[MAX_PROCESS_NUM];
 extern queue_t ready_queue;
@@ -68,7 +67,8 @@ void schedular(void) {
    * occures (done by fault handler)
    */
 
-  if (running_process->state != SUSPEND_STATE) {
+  if (running_process->state != SUSPEND_STATE &&
+      running_process->state != WAITING_STATE) {
     queue_push(&ready_queue, running_process);
     running_process->state = READY_STATE;
   }
