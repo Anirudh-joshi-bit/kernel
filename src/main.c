@@ -18,7 +18,7 @@ USER_CODE int user_launch_process ();
 
 
 /* set the value of this variable according to the number of processes you have */
-uint8_t  process_count = 8;
+uint8_t  process_count = 10;
 
 void main1 (void);          // this is must (atleast one process)
 void main2 (void);
@@ -28,8 +28,8 @@ void main5 (void);
 void main6 (void);
 void main7 (void);
 void main8 (void);
-
-
+void main9 (void);
+void main10 (void);
 
 void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind);
 void launch_process (void);
@@ -76,6 +76,8 @@ int main() {
     process_pc [5] = main6;
     process_pc [6] = main7;
     process_pc [7] = main8;
+    process_pc [8] = main9;
+    process_pc [9] = main10;
 
     for (uint8_t i=0; i<process_count; i++){
         make_process (&process[i], psp_val, msp_val, i);
@@ -86,6 +88,7 @@ int main() {
         msp_val &= ~(3);
     }
  
+    /* accessing illegal address in kernel code -> Kernel Panic*/
 //    *(uint32_t*) (0xffffffff) = 5;
 
     /*impose user restriction*/

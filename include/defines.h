@@ -19,7 +19,7 @@
 #define MAX_STR_SIZE                    100
 #define MAX_SYSCALL_NUM                 10
 #define SYSCALL_TABLE_AD                KERNEL_STACK_INIT+0xc
-#define MAX_PROCESS_NUM                 20
+#define MAX_PROCESS_NUM                 10
 #define USER_STACK_SIZE                 32 * 1024       // 32 KB
 #define KERNEL_STACK_SIZE               24 * 1024       // 24 KB
 #define BUSFAULT_IDENTIFIER             0x0
@@ -73,10 +73,9 @@ typedef struct __queue_t {
     uint8_t rare;
 }queue_t;
 
+
+/* to buggy !!!!*/
 typedef struct __semaphore_t {
-    uint32_t value;
+    uint8_t value;
     queue_t waiting_queue;
 } semaphore_t;
-
-
-

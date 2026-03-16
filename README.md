@@ -1,83 +1,86 @@
 # Minimal Preemptive Kernel for ARM Cortex-M4 (STM32F401RE)
 
 A minimal **preemptive operating system kernel** implemented for the
-**ARM Cortex-M4 (STM32F401RE)** to explore low-level OS design,
-exception handling, context switching, memory protection, and
-synchronization mechanisms.
+**ARM Cortex-M4 (STM32F401RE)** to explore low‑level operating system
+design on embedded hardware.
 
-This project demonstrates how a small embedded kernel can manage
-**multiple isolated user processes**, perform **preemptive scheduling**,
-implement **synchronization primitives**, and provide **fault
-isolation** using the ARM Cortex-M architecture.
+This project demonstrates how a lightweight kernel can manage multiple
+isolated processes while implementing:
+
+-   preemptive scheduling
+-   context switching
+-   privilege separation
+-   memory protection
+-   fault isolation
+
+The purpose of this project is educational: to understand how core OS
+mechanisms work on ARM Cortex‑M microcontrollers.
 
 ------------------------------------------------------------------------
 
 # System Overview
 
-The kernel runs on the **STM32F401RE (ARM Cortex-M4)** and provides a
-small multi-process execution environment.
+The kernel runs on the **STM32F401RE (ARM Cortex-M4)** microcontroller
+and provides a small **multi‑process execution environment**.
 
 Scheduling is driven by the **SysTick timer**, while **PendSV performs
 context switching**.
 
-The system supports:
+Current system capabilities:
 
--   Preemptive multitasking
--   Kernel / user privilege separation
--   Memory protection using MPU
--   Fault isolation between processes
--   Semaphore based synchronization
+-   preemptive multitasking
+-   kernel / user privilege separation
+-   MPU‑based memory protection
+-   fault isolation between processes
+-   atomic critical sections using interrupt masking
 
 ------------------------------------------------------------------------
 
 # Core Kernel Architecture
 
-## MSP / PSP Stack Separation
+## Dual Stack Model (MSP / PSP)
 
-The kernel uses the two stack pointers provided by the ARM Cortex-M
-architecture.
+The Cortex‑M architecture provides two stack pointers.
 
-**MSP (Main Stack Pointer)**\
+### MSP --- Main Stack Pointer
+
 Used by: - kernel code - exception handlers - interrupt handlers
 
-**PSP (Process Stack Pointer)**\
+### PSP --- Process Stack Pointer
+
 Used by: - user processes running in thread mode
 
-This ensures kernel execution and user tasks never share the same stack.
+This design prevents kernel stack corruption by user processes.
 
 ------------------------------------------------------------------------
 
-## Privilege Separation
+# Privilege Separation
 
-The kernel uses ARM's privilege model.
+The system uses the ARM privilege model.
 
-  Mode                Purpose
-  ------------------- ------------------
-  Privileged Mode     Kernel execution
-  Unprivileged Mode   User processes
+  Mode           Purpose
+  -------------- ------------------
+  Privileged     Kernel execution
+  Unprivileged   User processes
 
-User code cannot execute privileged instructions or access kernel memory
-directly.
-
-All kernel services must be requested through **SVC system calls**.
+User processes cannot execute privileged instructions or access
+protected kernel memory. All kernel services are accessed through **SVC
+system calls**.
 
 ------------------------------------------------------------------------
 
 # System Call Interface (SVC)
 
-User processes interact with the kernel using the **SVC (Supervisor
+User processes request kernel services using the **SVC (Supervisor
 Call)** exception.
 
-Typical flow:
+Execution flow:
 
-User Process\
-→ SVC instruction\
-→ SVC Handler\
-→ Kernel executes requested service\
-→ Return to user mode
+User Process → SVC Instruction → SVC Handler → Kernel Service → Return
+to User
 
-This allows controlled access to kernel functionality and hardware
-resources.
+This ensures controlled interaction between user programs and the
+kernel.
 
 ------------------------------------------------------------------------
 
@@ -85,10 +88,10 @@ resources.
 
 ## Preemptive Scheduling using SysTick
 
-A **SysTick interrupt** generates periodic scheduling ticks.
+A periodic **SysTick interrupt** drives scheduling.
 
-The SysTick handler sets the **PendSV interrupt pending bit** to trigger
-context switching.
+The SysTick handler triggers a context switch by setting the **PendSV
+pending bit**:
 
 ``` c
 SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
@@ -96,11 +99,9 @@ SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk;
 
 ------------------------------------------------------------------------
 
-## Context Switching with PendSV
+## Context Switching using PendSV
 
-PendSV performs the actual task switch.
-
-Hardware automatically saves:
+During exception entry, hardware automatically saves:
 
     r0 r1 r2 r3 r12 LR PC xPSR
 
@@ -108,8 +109,12 @@ The kernel manually saves:
 
     r4 – r11
 
-After saving the context, the scheduler selects the next runnable task
-and restores its context.
+Context switching steps:
+
+1.  Save current process registers
+2.  Select next runnable process
+3.  Restore the selected process context
+4.  Resume execution
 
 PendSV runs at the **lowest interrupt priority**, making it ideal for
 context switching.
@@ -118,108 +123,125 @@ context switching.
 
 # Process Management
 
-The kernel currently supports **up to 20 processes**.
+The kernel currently supports **up to 10 processes**.
 
-Each process has:
+Each process contains:
 
 -   Process Control Block (PCB)
--   independent user stack
--   independent kernel stack
--   process state information
+-   user stack
+-   kernel stack
+-   process state
 -   MPU configuration
 
 ------------------------------------------------------------------------
 
-## Process States
-
-The kernel implements four process states:
+# Process States
 
   State     Description
-  --------- ------------------------
+  --------- ----------------------
   RUNNING   Currently executing
   READY     Waiting for CPU
-  WAITING   Waiting for a resource
+  WAITING   Waiting for an event
   SUSPEND   Temporarily disabled
 
-The scheduler only selects **READY processes**.
-
-Processes in the WAITING state cannot execute until the resource becomes
-available.
+The scheduler selects processes from the **READY queue**.
 
 ------------------------------------------------------------------------
 
-# Round Robin Scheduler
+# Round‑Robin Scheduler
 
-The scheduler currently uses a **round-robin algorithm**.
+The kernel uses a **round‑robin scheduling algorithm**.
 
-Example logic:
+Example:
 
 ``` c
 current_task = (current_task + 1) % NUM_TASKS;
 ```
 
-This ensures fair CPU sharing among processes.
+This ensures fair CPU time distribution among processes.
 
 ------------------------------------------------------------------------
 
-# Semaphore Synchronization
+# Critical Section Protection
 
-The kernel includes **semaphore based synchronization**.
+Instead of semaphores, the kernel uses **critical sections implemented
+by masking interrupts**.
 
-## Lock Operation
+Example:
 
-When a process attempts to acquire a locked semaphore:
+``` c
+criticalENTER();
 
-1.  `semaphore.value--`
-2.  If the resource is unavailable:
-    -   process state changes **RUNNING → WAITING**
-    -   process is pushed into the **semaphore waiting queue**
-    -   scheduler is invoked via **PendSV**
+/* critical section */
 
-This prevents busy waiting and allows other processes to run.
+criticalEXIT();
+```
+
+Implementation:
+
+``` c
+void criticalENTER()
+{
+    __disable_irq();
+}
+
+void criticalEXIT()
+{
+    __enable_irq();
+}
+```
 
 ------------------------------------------------------------------------
 
-## Unlock Operation
+# Why Interrupt Masking Works
 
-When a semaphore is released:
+The Cortex‑M4 is a **single‑core processor**.
 
-1.  `semaphore.value++`
-2.  If the value becomes `1`, the resource becomes available.
-3.  If the waiting queue is not empty:
-    -   remove a process from the waiting queue
-    -   change its state **WAITING → READY**
-    -   push it into the ready queue
+Only one instruction stream executes at a time. Concurrency occurs only
+when a task is interrupted by an ISR.
+
+If interrupts are disabled:
+
+no interrupt → no preemption → no concurrent access
+
+Therefore the critical section becomes **atomic**.
+
+Because of this property:
+
+-   mutexes are unnecessary
+-   semaphores are unnecessary
+-   interrupt masking is sufficient
+
+This technique is commonly used in **small embedded kernels and
+lightweight RTOS implementations**.
 
 ------------------------------------------------------------------------
 
 # Fault Handling
 
-The kernel implements detailed **fault diagnostics**.
-
-Supported faults include:
+The kernel implements fault diagnostics for:
 
 -   Memory Management Fault
 -   Bus Fault
 -   Hard Fault
 
-The fault handler prints:
+The fault handler reports:
 
 -   faulting instruction
 -   program counter (PC)
 -   fault address
--   status registers
+-   fault status registers
 
 ### User Process Fault
 
-If a **user process causes a fault**:
+If a user process triggers a fault:
 
 -   the process is terminated
 -   other processes continue running
 
 ### Kernel Fault
 
-If the **kernel causes a fault**:
+If the kernel triggers a fault:
 
 -   the system enters **kernel panic**
 
@@ -227,55 +249,37 @@ If the **kernel causes a fault**:
 
 # Memory Protection (MPU)
 
-The **ARM Memory Protection Unit (MPU)** is used to isolate memory
-regions.
+The **ARM Memory Protection Unit (MPU)** isolates memory regions.
 
-MPU ensures:
+This ensures:
 
 -   user processes cannot access kernel memory
--   processes cannot corrupt each other
--   illegal accesses generate memory faults
+-   processes cannot overwrite each other's memory
+-   illegal accesses generate faults
 
-MPU regions are reconfigured during **context switching**.
+MPU configuration is updated during **context switching**.
 
 ------------------------------------------------------------------------
 
 # Memory Layout
 
-The system uses a **manually designed linker script**.
-
 ## SRAM Layout (96 KB)
 
-    SRAM
-    │
-    ├── Kernel Stack
-    ├── User Stack Region (32 KB)
-    ├── User Data Region (32 KB)
-    └── Kernel Data (16 KB)
-
-This layout provides strong memory isolation.
+SRAM │ ├── Kernel Stack ├── User Stack Region ├── User Data Region └──
+Kernel Data
 
 ------------------------------------------------------------------------
 
 ## Flash Layout
 
-    FLASH
-    │
-    ├── Vector Table
-    ├── Kernel Code + Kernel Data
-    └── User Code + User Data
-
-Example allocation:
-
-    64 KB → Kernel
-    64 KB → User programs
+FLASH │ ├── Vector Table ├── Kernel Code └── User Programs
 
 ------------------------------------------------------------------------
 
 # Hardware Platform
 
 Board: **STM32F401RE**\
-Processor: **ARM Cortex-M4**
+Processor: **ARM Cortex‑M4**
 
 Architecture features used:
 
@@ -283,7 +287,7 @@ Architecture features used:
 -   SVC exception
 -   SysTick timer
 -   PendSV exception
--   MPU (Memory Protection Unit)
+-   Memory Protection Unit (MPU)
 
 ------------------------------------------------------------------------
 
@@ -304,43 +308,23 @@ Languages:
 
 ------------------------------------------------------------------------
 
-# Concepts Explored
+# References
 
-Through this project:
+**Operating Systems: Three Easy Pieces (OSTEP)**\
+Remzi H. Arpaci‑Dusseau\
+Andrea C. Arpaci‑Dusseau
 
--   ARM exception handling
--   context switching on Cortex-M
--   semaphore synchronization
--   process scheduling
--   memory protection using MPU
--   privilege separation
--   linker script based memory layout
--   low level debugging using GDB
+**The Definitive Guide to ARM Cortex‑M3 and Cortex‑M4 Processors**\
+Joseph Yiu
 
 ------------------------------------------------------------------------
 
-# References
+# Author
 
-This project was strongly inspired by the following resources:
-
--   **Operating Systems: Three Easy Pieces (OSTEP)**\
-    Authors: Remzi H. Arpaci-Dusseau and Andrea C. Arpaci-Dusseau
-
--   **The Definitive Guide to ARM Cortex-M3 and Cortex-M4 Processors**\
-    Author: Joseph Yiu
-
-These resources were extremely helpful in understanding **operating
-system design concepts**, **ARM exception handling**, and **embedded
-kernel implementation**.
+Aniruddha Joshi
 
 ------------------------------------------------------------------------
 
 # Demo
 
 https://youtu.be/Hs2-LNs8Tdw
-
-------------------------------------------------------------------------
-
-# Author
-
-**Aniruddha Joshi**

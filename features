@@ -6,7 +6,7 @@
 +system call (svc)
 +ready queue
 +round robin schedular
-+multiple processes (not only 2)
++multiple processes (not only 2 max -> 10)
 +fault diagnosis (logging, pc)
 +kernel panic (if fault happens in kernel code)
 +user process suspend (if fault occures in user process)
@@ -29,6 +29,23 @@
                         triggered ... pc was in PRINTF function ... there might be some 
                         illegal memory access 
 
+    
+    bug     -> for any number of process i am getting unexpected hardfault after few 100 
+            context switches  
+            suspection ->   1. context switching routine might be interrupted before
+                            completing !!! => corrupted state ....
+                            2. queue implementation is buggy        
+                        
+    solved ... queue implementation was buggy ... q->rare = (q->rare+1) % q->size
+                it should be q->rare = (q->rare+1) % MAX_NUM_PROCESS
+
+
+    bug     -> adding semaphore for lock is causing the same issue (the above bug)
+            without semaphore, every thing is working properly ...
+            suspection ->   1. semaphore implementation
+    
+    not solved ....
+    
 
 
 * semaphore added ....  
@@ -52,3 +69,13 @@
                         pop from the <semaphore.waiting_queue> ,
                         change the state from WAITING_STATE to READY_STATE,
                         push the process to ready_queue
+
+        bug -> after some time, the whole system is crashing .... 
+
+
+
+* as the board i am working is single core system , i dont really need semaphore.
+locking the critical section using a __disable and __enable wraper on the 
+critical section is enough ... 
+
+this can enforce mutual exclusion

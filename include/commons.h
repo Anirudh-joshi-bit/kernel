@@ -31,16 +31,12 @@ void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 
 // asm functions
 void PendSV_Handler(void);
-
-void __asm__copy_reg (uint32_t *addr);
-void __asm__get_PRIMASK (uint32_t *addr);
-void __asm__get_FAULTMASK (uint32_t *addr);
-void __asm__get_BASEPRI (uint32_t *addr);
 void __asm__set_psp (uint32_t value);
 void __asm__set_msp (uint32_t value);
 void __asm__launch_main1 (void);
 
 
+void schedular (void);
 void mpu_setup (void);
 void __usart1_init (void);
 void printf (const char* msg, uint32_t addr);
@@ -58,3 +54,7 @@ uint32_t queue_size (queue_t *q);
 void semaphore_init (semaphore_t *sema, uint8_t value);
 void semaphore_lock (semaphore_t *sema);
 void semaphore_unlock (semaphore_t *sema);
+
+void enterCRITICAL (void);
+void exitCRITICAL (void);
+
