@@ -18,7 +18,7 @@ USER_CODE int user_launch_process ();
 
 
 /* set the value of this variable according to the number of processes you have */
-uint8_t  process_count = 3;
+uint8_t  process_count = 8;
 
 void main1 (void);          // this is must (atleast one process)
 void main2 (void);
@@ -27,6 +27,8 @@ void main4 (void);
 void main5 (void);
 void main6 (void);
 void main7 (void);
+void main8 (void);
+
 
 
 void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind);
@@ -38,7 +40,7 @@ int main() {
 
     /* some init code */
     __usart1_init ();
-    queue_init (&ready_queue, process_count);
+    queue_init (&ready_queue);
     semaphore_init (&sem_usart1, 1);
 
     if (process_count < 1 || process_count > MAX_PROCESS_NUM){
@@ -73,6 +75,7 @@ int main() {
     process_pc [4] = main5;
     process_pc [5] = main6;
     process_pc [6] = main7;
+    process_pc [7] = main8;
 
     for (uint8_t i=0; i<process_count; i++){
         make_process (&process[i], psp_val, msp_val, i);
@@ -106,8 +109,8 @@ switch to p2, bx lr will be called => starting -> set lr to a valid EXEC_RETURN 
 
 
     //process->pc = (uint32_t) fun;
-    process->psp = psp & (~3);
-    process->msp = msp & (~3);
+    process->psp = psp;
+    process->msp = msp;
     process->psp -= 8*4;        // start from 8 word below the base of the stack
     
     /* set the value of pc in side the padding (of 8w)
@@ -125,11 +128,6 @@ switch to p2, bx lr will be called => starting -> set lr to a valid EXEC_RETURN 
             *(uint32_t *)(process->psp+i*4) = 0x0;
     }
     
-    // set psp 
-
-    __asm__get_PRIMASK (&(process->PRIMASK));
-    __asm__get_FAULTMASK (&(process->FAULTMASK));
-    __asm__get_BASEPRI (&(process->BASEPRI));
 
 }
 
@@ -156,7 +154,10 @@ void  launch_process (void){
 
     /* initially all the processes will be placed in the ready queue except the first one (entry point) */
     for (uint8_t i=1; i<process_count; i++){
-        queue_push (&ready_queue, &process[i]);
+        int status = queue_push (&ready_queue, &process[i]);
+        if (status){
+            while (1);
+        }
     }
 
     process[0].state = RUNNING_STATE;

@@ -204,6 +204,8 @@ void __usart1_init(void) {
 
 void __usart1_print(const char *msg, uint32_t size) {
 
+//  semaphore_lock(&sem_usart1);
+
   int i = 0;
   while (i < size && msg[i] != '\0') {
     while (!(USART1->SR & USART_SR_TXE))
@@ -212,6 +214,8 @@ void __usart1_print(const char *msg, uint32_t size) {
   }
   while (!(USART1->SR & USART_SR_TC)) {
   }
+
+//  semaphore_unlock(&sem_usart1);
 }
 
 char *hex_str(uint32_t value, char *out) {
@@ -262,9 +266,9 @@ void printf(const char *msg, uint32_t address) {
 
 void syscall__printf(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   //((user_process_t *) RUNNING_PROCESS_AD)-> state = IO_RUNNING_STATE;
-  semaphore_lock(&sem_usart1);
+  //semaphore_lock(&sem_usart1);
   printf((const char *)a, b);
-  semaphore_unock(&sem_usart1);
+  //semaphore_unock(&sem_usart1);
   //((user_process_t *) RUNNING_PROCESS_AD)-> state = RUNNING_STATE;
 }
 

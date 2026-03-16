@@ -48,12 +48,13 @@ uint32_t _strlen (const char *msg);
 uint32_t erase_flash (uint32_t address);
 uint32_t flash_write (uint32_t dest, const char* src, uint32_t size, uint32_t delay);
 void delay (uint32_t  count);
-uint8_t queue_push (queue_t* q, user_process_t* process);
-uint8_t queue_pop (queue_t* q);
-void queue_init (queue_t* q, uint8_t size);
+uint8_t queue_push (queue_t *q, user_process_t *process);
+uint8_t queue_pop (queue_t *q);
+void queue_init (queue_t *q);
 user_process_t* queue_front (queue_t *q);
-uint32_t queue_empty (queue_t* q);
+uint32_t queue_empty (queue_t *q);
+uint32_t queue_size (queue_t *q);
 
 void semaphore_init (semaphore_t *sema, uint8_t value);
 void semaphore_lock (semaphore_t *sema);
-void semaphore_unock (semaphore_t *sema);
+void semaphore_unlock (semaphore_t *sema);

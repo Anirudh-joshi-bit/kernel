@@ -39,6 +39,8 @@
 .type PendSV_Handler, %function
 PendSV_Handler:
     
+    cpsid i
+
     push {lr}
     bl schedular
     pop {lr}
@@ -47,12 +49,6 @@ PendSV_Handler:
     ldr r0, =RUNNING_PROCESS
     ldr r1, [r0]            // r1 now contain the struct address
     
-    ldr r0, =PICKED_PROCESS
-    ldr r2, [r0]
-
-    cmp r2, r1 
-    it eq
-    bxeq lr
 
     stmia r1!, {r4-r11}     // r4->r11 stored in the runnging process struct
 
@@ -65,20 +61,6 @@ PendSV_Handler:
     add r1, #4
     
     str lr, [r1]            // important !!! store the exec_return value
-    add r1, #4
-
-    mrs r0, FAULTMASK
-    str r0, [r1]
-    add r1, #4
-
-    mrs r0, BASEPRI
-    str r0, [r1]
-    add r1, #4
-    
-    mrs r0, PRIMASK     // at the end -> restore the primask 
-    str r0, [r1]
-
-    dsb
 
     /*store the value of ispr, icpr, iabr regs into the struct*/
     // todo ********************************************************************
@@ -97,8 +79,6 @@ PendSV_Handler:
 
     /* before setting psp, msp, faultmask, basepri -> mask all interrupt
     so that no interrupt can be fired in the middle of setting important regs*/
-    mov r0, #1              
-    msr PRIMASK, r0
 
     ldr r0, [r1]
     msr psp, r0
@@ -109,20 +89,6 @@ PendSV_Handler:
     add r1, #4
     
     ldr lr, [r1]
-    add r1, #4 
-
-    ldr r0, [r1]
-    msr FAULTMASK, r0
-    add r1, #4
-    
-    ldr r0, [r1]
-    msr BASEPRI, r0
-    add r1, #4
-    
-    // do this in the end
-    ldr r0, [r1]
-    msr PRIMASK, r0
-    add r1, #4
 
     /* whatever is picked by the schedular, make it running ... picked -----> running*/
     ldr r0, =PICKED_PROCESS
@@ -131,6 +97,8 @@ PendSV_Handler:
     str r2, [r1]
     
     dsb
+
+    cpsie i
 
     bx lr
 

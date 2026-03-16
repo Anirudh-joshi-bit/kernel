@@ -50,10 +50,7 @@ typedef struct user_process_t {
     uint32_t psp;                          // process stack pointer  banked R13
     uint32_t msp;                          // main stack pointer     banker R13
     uint32_t lr;
-    uint32_t FAULTMASK;                    // fault mask register
-    uint32_t BASEPRI;                      // base pri register
-    // set the PRIMASK at the end !!
-    uint32_t PRIMASK;                      // premask register
+
              /*** donot store the control reg ***/
  //   uint32_t CONTROL;                      // control register
                         /* NVIC registers*/

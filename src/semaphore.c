@@ -5,7 +5,7 @@ extern uint8_t process_count;
 
 void semaphore_init (semaphore_t *sema, uint8_t value){
     sema->value = value;               // unlocked
-    queue_init (&(sema->waiting_queue), process_count);
+    queue_init (&(sema->waiting_queue));
 }
 
 /* this has to be atomic */
@@ -26,7 +26,7 @@ void semaphore_lock (semaphore_t *sema){
     __enable_irq ();
 }
 
-void semaphore_unock (semaphore_t *sema){
+void semaphore_unlock (semaphore_t *sema){
     __disable_irq ();
     sema->value ++;
     /* unlocked */
