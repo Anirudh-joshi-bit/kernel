@@ -16,7 +16,7 @@ hang:
 .size Reset_Handler, . - Reset_Handler
 
 /************************ Default_Handler start**********************/
-.section .text.Default_handler
+.section .text.Default_Handler
 .global Default_Handler
 .type Default_Handler, %function
 Default_Handler :
@@ -48,7 +48,19 @@ DebugMon_Handler :
 
 /************************ Default_Handler start**********************/
 
+/* header */
+.section .Header, "a", %progbits
+.global Header 
+.type Header, %object
+Header:
+    .word   0xffffffff
+    .word   0x043cd564 
+    .word   _evtable
+    .word   _header_start
+    .word   _svtable
+    .word   _firmware_end
 
+.size Header, . - Header
 
 /***************************** vtable *******************************/
 
@@ -65,21 +77,16 @@ vector_table:
     .word MemManage_Handler     /*  mem management handler */
     .word BusFault_Handler      /*  bus fault */
     .word UsageFault_Handler    /*  usage fault */
-    .word 0                     /*  reserved */
-    .word 0                     /*  reserved */
-    .word 0                     /*  reserved */
-    .word 0                     /*  reserved */
+    .word Default_Handler       /*  reserved */
+    .word Default_Handler       /*  reserved */
+    .word Default_Handler       /*  reserved */
+    .word Default_Handler       /*  reserved */
     .word SVC_Handler           /*  SVC call handler */
     .word DebugMon_Handler      /*  Debug moniter */
-    .word 0                     /*  reserver  */
+    .word Default_Handler       /*  reserver  */
     .word PendSV_Handler        /*  pend sv handler */
     .word SysTick_Handler       /*  systick timer handler */
 
-    .rept 40
-        .word Default_Handler
-    .endr
-
-    .word Default_Handler 
 
 .size vector_table, . - vector_table
 

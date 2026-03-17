@@ -20,7 +20,7 @@ OPTIMISATION = -O0
 # it remove some assumption that compiler makes
 FREESTANDING = -ffreestanding 
 
-FLASH_BASE = 0x08000000
+FLASH_BASE = 0x08020000
 # sector size is 16kB
 # secto number = 0 for bootloader
 SECTOR_SIZE = 0x4000			
