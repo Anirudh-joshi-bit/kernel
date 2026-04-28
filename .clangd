@@ -1,0 +1,20 @@
+CompileFlags:
+  Add:
+    - -I../../../include
+    - -I../../../include/cmsis
+    - -I../../../include/device
+    - -I../../../include/drivers
+    - -I../../include
+    - -I../../include/cmsis
+    - -I../../include/device
+    - -I../../include/drivers
+    - -I../include
+    - -I../include/cmsis
+    - -I../include/device
+    - -I../include/drivers
+    - -Iinclude
+    - -Iinclude/cmsis
+    - -Iinclude/device
+    - -Iinclude/drivers
+    - -I../../us_include
+

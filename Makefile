@@ -3,6 +3,11 @@ GREEN = \033[0;32m
 
 BUILD = build
 SRC = src
+DRIVER = drivers
+CORE = core
+MIDDLEWARE = middleware
+USER = user
+
 
 ARM = arm-none-eabi-
 CC = $(ARM)gcc
@@ -12,7 +17,7 @@ GDB = $(ARM)gdb
 OBJCPY = $(ARM)objcopy
 
 #flags
-INCLUDE_CMSIS_HEADERS = -Iinclude/cmsis -Iinclude/device
+INCLUDES = -Iinclude/cmsis -Iinclude/device -Iinclude/drivers -Iinclude -Iinclude/us_include
 MPU = -mcpu=cortex-m4 -mthumb
 OPTIMISATION = -O0
 # frestandin is important as we need to tell the compiler that there is 
@@ -20,18 +25,14 @@ OPTIMISATION = -O0
 # it remove some assumption that compiler makes
 FREESTANDING = -ffreestanding 
 
-FLASH_BASE = 0x08020000
-# sector size is 16kB
-# secto number = 0 for bootloader
-SECTOR_SIZE = 0x4000			
-SECTOR_NUMBER = 0
-FLASH_ADDRESS = $(shell printf "0x%X\n" $$(( $(FLASH_BASE) + $(SECTOR_SIZE) * $(SECTOR_NUMBER) ))
+FLASH_BASE = 0x08000000
 
-C_SRC_FILES = $(wildcard $(SRC)/*.c)
-AS_SRC_FILES = $(wildcard $(SRC)/*.s)
+C_SRC_FILES = $(shell find $(SRC) -name "*.c")
+AS_SRC_FILES = $(shell find $(SRC) -name "*.s")
 
 C_OBJ_FILES =		$(patsubst $(SRC)/%.c, $(BUILD)/%_c_.o, $(C_SRC_FILES))
 AS_OBJ_FILES =		$(patsubst $(SRC)/%.s, $(BUILD)/%_as_.o, $(AS_SRC_FILES))
+C_HEADER_FILES = $(shell find include -name "*.h")
 
 LINKER_SCRIPT =  linkerscript.ld 
 
@@ -45,32 +46,32 @@ OPENOCD = openocd -f interface/stlink.cfg -f target/stm32f4x.cfg
 
 default : all
 
-all : $(ELF) $(BIN)
+all : build Makefile $(C_HEADER_FILES) $(ELF) $(BIN) 
 
-flash : $(BIN)
+build : Makefile $(C_HEADER_FILES)
+	mkdir -p $(BUILD)/$(MIDDLEWARE) $(BUILD)/$(CORE) $(BUILD)/$(DRIVER) $(BUILD)/$(USER)
+
+flash : $(BIN)  Makefile $(C_HEADER_FILES)
 	$(OPENOCD) -c "program $(BIN) $(FLASH_BASE) verify reset exit"
 
-start_debug_server : $(ELF)
+start_debug_server : $(ELF) Makefile $(C_HEADER_FILES)
 	$(OPENOCD)
-start_debug_client : $(ELF)
+start_debug_client : $(ELF) Makefile $(C_HEADER_FILES)
 	$(GDB) $(ELF)
 
-$(BIN) : $(ELF)
+$(BIN) : $(ELF) Makefile $(C_HEADER_FILES)
 	$(OBJCPY) -O binary $(ELF) $(BIN)
 
-$(ELF) : $(LINKER_SCRIPT) $(C_OBJ_FILES) $(AS_OBJ_FILES)
+$(ELF) : $(LINKER_SCRIPT) $(C_OBJ_FILES) $(AS_OBJ_FILES) Makefile $(C_HEADER_FILES)
 	$(CC) -nostartfiles -Wl,--gc-sections  -T $(LINKER_SCRIPT) $(C_OBJ_FILES) $(AS_OBJ_FILES) -o $(ELF)
 
 $(BUILD)/%_c_.o : $(SRC)/%.c 
-		
-	$(CC) -c -g $(INCLUDE_CMSIS_HEADERS) $(MPU) $(FREESTANDING) -O0 -g3 -fno-inline $< -o $@
+	$(CC) -c -g $(INCLUDES) $(MPU) $(FREESTANDING) -O0 -g3 -fno-inline $< -o $@
 
 $(BUILD)/%_as_.o : $(SRC)/%.s
-	
 	$(AS) -g $< -o $@
 
 clean : 
-	@rm $(BUILD)/*.o $(BUILD)/*.bin $(BUILD)/*.elf
-	
+	@rm -rf build
 
 

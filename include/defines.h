@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #define MAIN1_PROCESS_NUM               0
 #define MAIN2_PROCESS_NUM               1
 #define READY_STATE                     00
@@ -19,7 +21,7 @@
 #define MAX_STR_SIZE                    100
 #define MAX_SYSCALL_NUM                 10
 #define SYSCALL_TABLE_AD                KERNEL_STACK_INIT+0xc
-#define MAX_PROCESS_NUM                 10
+#define MAX_PROCESS_NUM                 15
 #define USER_STACK_SIZE                 32 * 1024       // 32 KB
 #define KERNEL_STACK_SIZE               24 * 1024       // 24 KB
 #define BUSFAULT_IDENTIFIER             0x0

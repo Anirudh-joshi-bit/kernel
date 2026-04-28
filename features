@@ -38,7 +38,7 @@
                         
     solved ... queue implementation was buggy ... q->rare = (q->rare+1) % q->size
                 it should be q->rare = (q->rare+1) % MAX_NUM_PROCESS
-
+    
 
     bug     -> adding semaphore for lock is causing the same issue (the above bug)
             without semaphore, every thing is working properly ...
@@ -46,6 +46,7 @@
     
     not solved ....
     
+    prev 2 bugs might because of __disable_irq (attempting to lock)
 
 
 * semaphore added ....  
