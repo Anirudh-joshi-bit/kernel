@@ -61,6 +61,9 @@ start_debug_client : $(ELF) Makefile $(C_HEADER_FILES)
 
 $(BIN) : $(ELF) Makefile $(C_HEADER_FILES)
 	$(OBJCPY) -O binary $(ELF) $(BIN)
+	hexdump -C $(BIN) > $(BUILD)/firmware.hex
+	arm-none-eabi-objdump -h $(ELF) > $(BUILD)/sections.txt
+	arm-none-eabi-objdump -d -S $(ELF) >> $(BUILD)/firmware.s
 
 $(ELF) : $(LINKER_SCRIPT) $(C_OBJ_FILES) $(AS_OBJ_FILES) Makefile $(C_HEADER_FILES)
 	$(CC) -nostartfiles -Wl,--gc-sections  -T $(LINKER_SCRIPT) $(C_OBJ_FILES) $(AS_OBJ_FILES) -o $(ELF)

@@ -3,20 +3,20 @@
 .thumb
 
 /* header */
-/*
+
 .section .Header, "a", %progbits
 .global Header 
 .type Header, %object
 Header:
     .word   0xffffffff
-    .word   0x043cd564 
+    .word   0x7f0f4487 
     .word   _evtable
     .word   _header_start
     .word   _svtable
     .word   _firmware_end
 
 .size Header, . - Header
-*/
+
 /***************************** vtable *******************************/
 
 .section .isr_vector, "a", %progbits
