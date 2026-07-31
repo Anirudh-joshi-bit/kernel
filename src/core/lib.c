@@ -1,10 +1,13 @@
 #include "core.h"
+#include "defines.h"
 #include "usart.h"
 #include <stdint.h>
 
 void enterCRITICAL(void) { __disable_irq(); }
 
 void exitCRITICAL(void) { __enable_irq(); }
+
+extern semaphore_t sem_usart1;
 
 uint32_t _strlen(const char *msg) {
 
@@ -61,9 +64,9 @@ void printf(const char *msg, uint32_t address) {
 }
 
 void syscall__printf(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
-  // semaphore_lock(&sem_usart1);
+  semaphore_lock(&sem_usart1);
   printf((const char *)a, b);
-  // semaphore_unlock(&sem_usart1);
+  semaphore_unlock(&sem_usart1);
 }
 
 void syscall__scanf(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {

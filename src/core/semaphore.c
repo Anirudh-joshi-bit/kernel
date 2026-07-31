@@ -17,9 +17,11 @@ void semaphore_lock(semaphore_t *sema) {
     queue_push(&(sema->waiting_queue), running_process);
     running_process->state = WAITING_STATE;
 
-    /* call PendSV_Handler for context switching */
-    PendSV_Handler();
 //    schedular ();
+
+    /* call PendSV_Handler for context switching */
+    //PendSV_Handler();
+    NVIC_SetPendingIRQ (PendSV_IRQn);
 
     __enable_irq();
     return;
