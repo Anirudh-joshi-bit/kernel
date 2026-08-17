@@ -164,32 +164,25 @@ This ensures fair CPU time distribution among processes.
 
 # Critical Section Protection
 
-Instead of semaphores, the kernel uses **critical sections implemented
-by masking interrupts**.
+The kernel uses `semaphore` to prevent the race condition.
 
 Example:
 
 ``` c
-criticalENTER();
+semaphore_lock(&sem_usart1);
 
 /* critical section */
 
-criticalEXIT();
+semaphore_unlock(&sem_usart1);
 ```
 
 Implementation:
 
-``` c
-void criticalENTER()
-{
-    __disable_irq();
-}
+. Each semaphore maintains a value and a waiting queue for blocked processes.
+. When a process acquires an available semaphore, the semaphore value is decremented by 1.
+. If a process attempts to acquire an unavailable semaphore, it is removed from the ready queue and placed in the semaphore's waiting queue until the semaphore becomes available.
+. When a process exits a critical section, it calls semaphore_unlock(&sem_usart1). The kernel checks the semaphore's waiting queue and, if a process is waiting, moves it back to the ready queue and updates the semaphore state accordingly.
 
-void criticalEXIT()
-{
-    __enable_irq();
-}
-```
 
 ------------------------------------------------------------------------
 
