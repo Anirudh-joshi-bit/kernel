@@ -10,20 +10,20 @@
 #define WAITING_STATE                   03
 #define FAULT_IN_USERPROC               00 
 #define FAULT_IN_KERNEL                 01
-#define KERNELINIT_SIZE                 8*1024
-#define KERNEL_STACK_INIT               0x20018000-KERNELINIT_SIZE
-#define USER_STACK_INIT                 0x20000000+64*1024  
-#define SIZE_PROCESS                    15*4
-#define RUNNING_PROCESS_AD KERNEL_STACK_INIT+0x4    // stores address of running process
-#define PICKED_PROCESS_AD RUNNING_PROCESS_AD+0x4    // stores address of picked process
+#define KERNELINIT_SIZE                 (8*1024)
+#define KERNEL_STACK_INIT               (0x20018000-KERNELINIT_SIZE)
+#define USER_STACK_INIT                 (0x20000000+64*1024)
+#define SIZE_PROCESS                    (15*4)
+#define RUNNING_PROCESS_AD (KERNEL_STACK_INIT+0x4)    // stores address of running process
+#define PICKED_PROCESS_AD (RUNNING_PROCESS_AD+0x4)    // stores address of picked process
 #define RX_PIN                          9
 #define TX_PIN                          10 
 #define MAX_STR_SIZE                    100
 #define MAX_SYSCALL_NUM                 10
-#define SYSCALL_TABLE_AD                KERNEL_STACK_INIT+0xc
+#define SYSCALL_TABLE_AD                (KERNEL_STACK_INIT+0xc)
 #define MAX_PROCESS_NUM                 15
-#define USER_STACK_SIZE                 32 * 1024       // 32 KB
-#define KERNEL_STACK_SIZE               24 * 1024       // 24 KB
+#define USER_STACK_SIZE                 (32 * 1024)       // 32 KB
+#define KERNEL_STACK_SIZE               (24 * 1024)       // 24 KB
 #define BUSFAULT_IDENTIFIER             0x0
 #define MEMMANAGE_IDENTIFIER            0x1
 #define USAGEFAULT_IDENTIFIER           0x2
@@ -59,7 +59,7 @@ typedef struct user_process_t {
 
     /******************* about process ****************************************/
     uint32_t  state;             // waiting/running/io
-
+    uint32_t process_id;
 
 } user_process_t;
 /* xPSR = {APSR, IPSR, EPSR} */
@@ -76,7 +76,6 @@ typedef struct __queue_t {
 }queue_t;
 
 
-/* to buggy !!!!*/
 typedef struct __semaphore_t {
     uint8_t value;
     queue_t waiting_queue;

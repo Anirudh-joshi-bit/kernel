@@ -3,11 +3,13 @@
 #include "usart.h"
 #include <stdint.h>
 
+
+extern semaphore_t sem_usart1;
+extern uint8_t process_count;
+
 void enterCRITICAL(void) { __disable_irq(); }
 
 void exitCRITICAL(void) { __enable_irq(); }
-
-extern semaphore_t sem_usart1;
 
 uint32_t _strlen(const char *msg) {
 
@@ -74,3 +76,10 @@ void syscall__scanf(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
   while (1)
     ;
 }
+
+void syscall__process_exit (uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+  // ignore  all the parameters
+  process_exit ();
+}
+
+

@@ -11,4 +11,5 @@
 
 /**************** syscalls **************************/
 USER_CODE void user_printf (const char *string, uint32_t addr);
+USER_CODE void user_process_exit (void);
 

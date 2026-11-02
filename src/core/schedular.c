@@ -12,11 +12,19 @@ void schedular(void) {
   user_process_t *picked_process = NULL;
   user_process_t *running_process = *(user_process_t **)(RUNNING_PROCESS_AD);
 
+
+  // we could use a priority queue here to support priority...
   picked_process = queue_front(&ready_queue);
   uint8_t status = queue_pop(&ready_queue);
 
-  if (-1 == status || !picked_process)
-    return;
+
+  // if ready queue is empty, then pick the runnung process
+  if (0xff == status || !picked_process){
+    picked_process = *(user_process_t **)(RUNNING_PROCESS_AD);
+    // dissable systick to remove the context switching overhead if there is only one process .
+    SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk);
+    // better if the last standing process is too large  or there is only one process to begin with
+  }
 
   *(uint32_t *)(PICKED_PROCESS_AD) = (uint32_t)(picked_process);
 

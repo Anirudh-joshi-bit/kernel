@@ -28,20 +28,24 @@ extern uint32_t _SRAMUserSpaceSize;
 // syscalls
 void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+void syscall__process_exit (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 
 // asm functions
 void PendSV_Handler(void);
 void __asm__set_psp (uint32_t value);
 void __asm__set_msp (uint32_t value);
 void __asm__launch_main1 (void);
+void user_process_exit (void);  // unique case as process may or may not be calling this syscall directly
 
 
 void schedular (void);
 void mpu_setup (void);
 void __usart1_init (void);
 void printf (const char* msg, uint32_t addr);
+void process_exit (void);
 uint32_t _strlen (const char *msg);
 void delay (uint32_t  count);
+
 uint8_t queue_push (queue_t *q, user_process_t *process);
 uint8_t queue_pop (queue_t *q);
 void queue_init (queue_t *q);

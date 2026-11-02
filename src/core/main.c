@@ -1,9 +1,12 @@
 #include "core.h"
+#include "defines.h"
 #include <stdint.h>
 
 /************************syscalls declaration*************************/
 void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+void syscall__process_exit (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+
 void (*Syscall_Table [MAX_SYSCALL_NUM]) (uint32_t , uint32_t, uint32_t, uint32_t); 
 
 /* semaphores */
@@ -39,6 +42,25 @@ void main15 (void);
 void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind);
 void launch_process (void);
 
+
+// if any of the process returns from mainx funcktion, this function wwill be called
+void process_exit (void) {
+
+  // i dont know why i was getting hardfault when using <*(user_process_t **) RUNNING_PROCESS_AD> T_T 
+  // got it .. should have used () to enclosed the constant in define.h file !!!
+  user_process_t *process = *(user_process_t **)(RUNNING_PROCESS_AD);
+  uint32_t process_id = process->process_id;
+  printf ("process with process id <%d> is terminated \n\r",
+            (uint32_t)(&process_id));
+  // remove the process from the queue , call context switching and return
+  
+  // suspend the process
+  process -> state = SUSPEND_STATE;
+ 
+  // set the pendsv (to trigger context switching)
+  NVIC_SetPendingIRQ (PendSV_IRQn);
+}
+
 int main() {
 
     SCB->SHP[10] = 0xff;    // set the PendSV to be the lowest priority...
@@ -65,6 +87,8 @@ int main() {
     /* init syscall table */
     Syscall_Table[0] =  syscall__printf;
     Syscall_Table[1] =  syscall__scanf;
+    Syscall_Table[2] =  syscall__process_exit;
+
     *(uint32_t *)(SYSCALL_TABLE_AD) = (uint32_t)(Syscall_Table);
     
     uint32_t psp_val = USER_STACK_INIT;
@@ -106,11 +130,17 @@ int main() {
 
     /* start the processes */
     launch_process();
-    /* should never fall to this section */
+
+    // TODO
+    // transfer the control to this section from user space if there is no process to be run
+
+
+    // if all the processes are done
+    printf ("all the processes are done executing \n\r", 0x0);
     while (1);
 }
 
-void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t ind){
+void make_process (user_process_t* process, uint32_t psp, uint32_t msp, uint8_t process_id){
     process->r4 = process->r5 = process->r6 = process->r7 = process->r8 
         = process->r9 = process->r10 = process->r11 = 0;
 
@@ -125,22 +155,31 @@ switch to p2, bx lr will be called => starting -> set lr to a valid EXEC_RETURN 
     process->psp = psp;
     process->msp = msp;
     process->psp -= 8*4;        // start from 8 word below the base of the stack
-    
+  
+
     /* set the value of pc in side the padding (of 8w)
     the values in the padding is random -> make them 0x0 
 
     set the xPSR word in the stack to 0x01000000 as 24th bit must ne 1 for xPSR to 
     represent thumb state 
     */
+
+    // put the lr value in stack if you want to be able to return from the user process
+  
     for (int i=0; i<8; i++){
-        if (i == 6)
-            *(uint32_t *)(process->psp+i*4) = (uint32_t) process_pc [ind];
+        if (i == 5) {
+          *(uint32_t *)(process->psp+i*4) = (uint32_t ) user_process_exit;
+        }
+        else if (i == 6)
+            *(uint32_t *)(process->psp+i*4) =
+                    (uint32_t) process_pc [process_id];
         else if (i == 7)
             *(uint32_t *)(process->psp+i*4) = 0x01000000;
         else 
             *(uint32_t *)(process->psp+i*4) = 0x0;
     }
     
+    process-> process_id = process_id;
 
 }
 
