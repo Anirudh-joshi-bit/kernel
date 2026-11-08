@@ -3,11 +3,11 @@
 #include <stdint.h>
 
 /************************syscalls declaration*************************/
-void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
-void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
-void syscall__process_exit (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+void syscall__printf (const char* string, ...);
+void syscall__scanf  (const char* string, ...);
+void syscall__process_exit (uint32_t status);
 
-void (*Syscall_Table [MAX_SYSCALL_NUM]) (uint32_t , uint32_t, uint32_t, uint32_t); 
+void (*Syscall_Table [MAX_SYSCALL_NUM]) (void); 
 
 /* semaphores */
 semaphore_t sem_usart1;
@@ -44,14 +44,15 @@ void launch_process (void);
 
 
 // if any of the process returns from mainx funcktion, this function wwill be called
-void process_exit (void) {
+void process_exit (uint32_t status) {
+  // do what ever you want with the status
 
   // i dont know why i was getting hardfault when using <*(user_process_t **) RUNNING_PROCESS_AD> T_T 
   // got it .. should have used () to enclosed the constant in define.h file !!!
   user_process_t *process = *(user_process_t **)(RUNNING_PROCESS_AD);
   uint32_t process_id = process->process_id;
   printf ("process with process id <%d> is terminated \n\r",
-            (uint32_t)(&process_id));
+            process_id);
   // remove the process from the queue , call context switching and return
   
   // suspend the process
@@ -71,7 +72,7 @@ int main() {
     semaphore_init (&sem_usart1, 1);
 
     if (process_count < 1 || process_count > MAX_PROCESS_NUM){
-        printf ("ERROR in the number of process ....\n\r", 0x0);
+        printf ("ERROR in the number of process ....\n\r");
         while (1);
     }
 
@@ -85,9 +86,9 @@ int main() {
 
 
     /* init syscall table */
-    Syscall_Table[0] =  syscall__printf;
-    Syscall_Table[1] =  syscall__scanf;
-    Syscall_Table[2] =  syscall__process_exit;
+    Syscall_Table[0] =  (void (*) (void))syscall__printf;
+    Syscall_Table[1] =  (void (*) (void))syscall__scanf;
+    Syscall_Table[2] =  (void (*) (void))syscall__process_exit;
 
     *(uint32_t *)(SYSCALL_TABLE_AD) = (uint32_t)(Syscall_Table);
     
@@ -136,7 +137,7 @@ int main() {
 
 
     // if all the processes are done
-    printf ("all the processes are done executing \n\r", 0x0);
+    printf ("all the processes are done executing \n\r");
     while (1);
 }
 

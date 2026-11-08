@@ -7,6 +7,8 @@
 .type user_printf, %function
 user_printf:
     /* r0 -> string, r1 -> address*/
+    // there are n number of arguments in printf function ... 4 are stored in 
+    // the regiser and rest will be in the stack
     svc #0
     bx lr
 

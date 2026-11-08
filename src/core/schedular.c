@@ -22,6 +22,8 @@ void schedular(void) {
   if (0xff == status || !picked_process){
     picked_process = *(user_process_t **)(RUNNING_PROCESS_AD);
     // dissable systick to remove the context switching overhead if there is only one process .
+
+    printf ("ready queue is empty, turning off context switching\n\r", 0x0);
     SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk);
     // better if the last standing process is too large  or there is only one process to begin with
   }

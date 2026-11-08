@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "device/stm32f401xe.h"
 #include "defines.h"
+#include "stdarg.h"
 
 // linker script symbols ->
 extern uint32_t _estack;
@@ -26,9 +27,9 @@ extern uint32_t _SRAMUserSpaceSize;
 
 
 // syscalls
-void syscall__printf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
-void syscall__scanf (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
-void syscall__process_exit (uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+void syscall__printf (const char* msg, ...);
+void syscall__scanf (const char* msg, ...);
+void syscall__process_exit (uint32_t status);
 
 // asm functions
 void PendSV_Handler(void);
@@ -41,8 +42,8 @@ void user_process_exit (void);  // unique case as process may or may not be call
 void schedular (void);
 void mpu_setup (void);
 void __usart1_init (void);
-void printf (const char* msg, uint32_t addr);
-void process_exit (void);
+void printf (const char* msg, ... );
+void process_exit (uint32_t status);
 uint32_t _strlen (const char *msg);
 void delay (uint32_t  count);
 
