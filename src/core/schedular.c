@@ -5,6 +5,7 @@
 extern user_process_t process[MAX_PROCESS_NUM];
 extern queue_t ready_queue;
 extern semaphore_t sem_usart1;
+extern bool context_switch_dissabled;
 
 void schedular(void) {
 
@@ -25,6 +26,8 @@ void schedular(void) {
 
     printf ("ready queue is empty, turning off context switching\n\r", 0x0);
     SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk);
+    context_switch_dissabled = true;
+
     // better if the last standing process is too large  or there is only one process to begin with
   }
 

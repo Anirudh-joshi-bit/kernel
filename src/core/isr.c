@@ -52,14 +52,14 @@ void fault_handler_helper(uint32_t pc, uint8_t fault_identifier,
   if (fault_identifier == BUSFAULT_IDENTIFIER) {
     printf("busdault !!\n\r", 0x0);
     if (SCB->CFSR & SCB_CFSR_BFARVALID_Msk)
-      printf("busfault address -> %\n\r", (uint32_t)(&SCB->BFAR));
+      printf("busfault address -> %x\r", SCB->BFAR);
   }
 
   /* MemManagement diagnosis */
   else if (fault_identifier == MEMMANAGE_IDENTIFIER) {
     printf("MemManagement exception !!\n\r", 0x0);
     if (SCB->CFSR & SCB_CFSR_MMARVALID_Msk)
-      printf("address caused MemManage Fault -> %\n\r", SCB->MMFAR);
+      printf("address caused MemManage Fault -> %x\n\r", SCB->MMFAR);
   }
 
   /* UsageFault diagnosis */
@@ -72,10 +72,10 @@ void fault_handler_helper(uint32_t pc, uint8_t fault_identifier,
 
   uint32_t instruction = *(uint32_t *)(pc);
 
-  printf("configrable fault status reg (SCB->CFSR) => %\n\r",
-         (uint32_t)(&SCB->CFSR));
-  printf("PC -> %\n\r", (uint32_t)&pc);
-  printf("instruction that caused the fault-> %\n\r", (uint32_t)(&instruction));
+  printf("configrable fault status reg (SCB->CFSR) => %x\n\r",
+         SCB->CFSR);
+  printf("PC -> %x\n\r", pc);
+  printf("instruction that caused the fault-> %x\n\r", instruction);
 
   /* KERNEL PANIC if fault in kernel
    * PROCESSES TERMINATION if fault in user process */
@@ -102,10 +102,10 @@ void HardFault_Handler_helper(uint32_t pc) {
   uint32_t instruction = *(uint32_t *)(pc);
 
   printf("HARD_FAULT !!!\n\r", 0x0);
-  printf("configrable fault status reg (SCB->CFSR) => %\n\r",
-         (uint32_t)(&SCB->CFSR));
-  printf("Hard Fault Status Register -> %\n\r", (uint32_t)(&SCB->HFSR));
-  printf("PC -> %\n\r", (uint32_t)(&pc));
-  printf("instruction that triggered HardFault -> %\n\r",
-         (uint32_t)&instruction);
+  printf("configrable fault status reg (SCB->CFSR) => %x\n\r",
+         SCB->CFSR);
+  printf("Hard Fault Status Register -> %x\n\r", SCB->HFSR);
+  printf("PC -> %x\n\r", pc);
+  printf("instruction that triggered HardFault -> %x\n\r",
+         instruction);
 }

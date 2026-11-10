@@ -46,6 +46,7 @@ void printf (const char* msg, ... );
 void process_exit (uint32_t status);
 uint32_t _strlen (const char *msg);
 void delay (uint32_t  count);
+void kernel_hang (const char* msg);
 
 uint8_t queue_push (queue_t *q, user_process_t *process);
 uint8_t queue_pop (queue_t *q);

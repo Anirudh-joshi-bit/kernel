@@ -2,7 +2,7 @@
 
 USER_CODE int main6 (void){
   
-  int count = 10;
+  int count = 1;
     while (count--){
         user_printf ("@@@@@@@@@@hello from main6.c\n\r", 0x0);
 

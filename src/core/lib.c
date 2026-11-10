@@ -7,6 +7,14 @@
 extern semaphore_t sem_usart1;
 extern uint8_t process_count;
 
+void kernel_hang(const char* msg){
+  printf ("kernel entered hang state\n\r");
+  printf (msg);
+  printf ("restart the system\n\r");
+
+  while (1);
+}
+
 void enterCRITICAL(void) { __disable_irq(); }
 
 void exitCRITICAL(void) { __enable_irq(); }

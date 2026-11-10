@@ -1,12 +1,12 @@
 #include "kernel_api.h"
+#include <stdint.h>
 
 USER_CODE int main1(void) {
-  while (1) {
+  uint32_t count = 1;
+  while (count--) {
 
-    user_printf("hello from main1.c\n\r", 0x0);
-    user_printf("hello from main1.c second time\n\r", 0x0);
-    user_printf("hello from main1.c third time\n\r", 0x0);
+    user_printf("hello from main1.c\n\r");
+    user_printf("hello from main1.c second time\n\r");
+    user_printf("hello from main1.c third time\n\r");
   }
-
-  return 0;
 }

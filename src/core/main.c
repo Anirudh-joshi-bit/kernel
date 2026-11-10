@@ -20,6 +20,8 @@ queue_t ready_queue;
 USER_CODE int user_launch_process ();
 
 
+bool context_switch_dissabled = false;
+
 /* set the value of this variable according to the number of processes you have */
 uint8_t  process_count = 15;
 
@@ -58,6 +60,9 @@ void process_exit (uint32_t status) {
   // suspend the process
   process -> state = SUSPEND_STATE;
  
+  if (context_switch_dissabled){
+    kernel_hang("no available process\n");
+  }
   // set the pendsv (to trigger context switching)
   NVIC_SetPendingIRQ (PendSV_IRQn);
 }
@@ -115,12 +120,13 @@ int main() {
     process_pc [14] = main15;
 
     for (uint8_t i=0; i<process_count; i++){
-        make_process (&process[i], psp_val, msp_val, i);
-        psp_val -= user_stack_size;
-        msp_val -= kernel_stack_size;
         /* make stack pointers word aligned */
         psp_val &= ~(3);
         msp_val &= ~(3);
+
+        make_process (&process[i], psp_val, msp_val, i);
+        psp_val -= user_stack_size;
+        msp_val -= kernel_stack_size;
     }
  
     /* accessing illegal address in kernel code -> Kernel Panic*/
@@ -221,3 +227,25 @@ void  launch_process (void){
     __asm__launch_main1();
 
 }
+
+
+
+
+
+
+// 0x2000ffe8:	0x00000000	0x00000000	0x00000000	0x080102cd
+// 0x2000fff8:	0x08010279	0x01000000	0x91675ac8	0x614e7488
+//
+// 0x2000ffd8:	0x20017fd0	0x080102c9	0x00000000	0x00000000
+// 0x2000ffe8:	0x00000000	0x00000000	0x00000000	0x080102cd
+//
+//
+// 0x2000ed9c:	0x00000000	0x00000000	0x00000000	0x080102cd
+// 0x2000edac:	0x08010161	0x01000000	0x739917e9	0x416ec0ab
+//
+/*
+ * 0x2000ffe8:	0x00000000	0x00000000	0x00000000	0x080102cd
+   0x2000fff8:	0x08010279	0x01000000	0x91675ac8	0x614e7488
+ *
+ *
+ */
