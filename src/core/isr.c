@@ -30,7 +30,7 @@ void resetHandlerHelper(void) {
 
   dest = (uint32_t)&_suserdata;
   dest_end = (uint32_t)&_euserdata;
-  src = (uint32_t)&_siuserdata;
+  src = (uint32_t)&_siuserdata;       // present in flash
 
   for (uint32_t i = dest; i <= dest_end; i += 4) {
     *(uint32_t *)(i) = *(uint32_t *)(src);
@@ -50,21 +50,21 @@ void fault_handler_helper(uint32_t pc, uint8_t fault_identifier,
 
   /* bus fault diagnosis */
   if (fault_identifier == BUSFAULT_IDENTIFIER) {
-    printf("busdault !!\n\r", 0x0);
+    printf("busdault !!\n\r");
     if (SCB->CFSR & SCB_CFSR_BFARVALID_Msk)
       printf("busfault address -> %x\r", SCB->BFAR);
   }
 
   /* MemManagement diagnosis */
   else if (fault_identifier == MEMMANAGE_IDENTIFIER) {
-    printf("MemManagement exception !!\n\r", 0x0);
+    printf("MemManagement exception !!\n\r");
     if (SCB->CFSR & SCB_CFSR_MMARVALID_Msk)
       printf("address caused MemManage Fault -> %x\n\r", SCB->MMFAR);
   }
 
   /* UsageFault diagnosis */
   else if (fault_identifier == USAGEFAULT_IDENTIFIER) {
-    printf("UsageFault !!\n\r", 0x0);
+    printf("UsageFault !!\n\r");
     /* there is no address access that can cause USAGE FAULT */
   } else {
     return;
@@ -81,14 +81,14 @@ void fault_handler_helper(uint32_t pc, uint8_t fault_identifier,
    * PROCESSES TERMINATION if fault in user process */
 
   if (fault_place == FAULT_IN_KERNEL) {
-    printf("\n\n\rKERNEL PANIC......\n\n\r", 0x0);
+    printf("\n\n\rKERNEL PANIC......\n\n\r");
     while (1)
       ;
   }
   /* change state from running to suspend and set pendsv */
   else if (fault_place == FAULT_IN_USERPROC) {
-    printf("terminating user process...\n\r", 0x0);
-    printf("reason -> fault", 0x0);
+    printf("terminating user process...\n\r");
+    printf("reason -> fault\n\r");
 
     (*(user_process_t **)(RUNNING_PROCESS_AD))->state = SUSPEND_STATE;
 
@@ -101,7 +101,7 @@ void HardFault_Handler_helper(uint32_t pc) {
 
   uint32_t instruction = *(uint32_t *)(pc);
 
-  printf("HARD_FAULT !!!\n\r", 0x0);
+  printf("HARD_FAULT !!!\n\r");
   printf("configrable fault status reg (SCB->CFSR) => %x\n\r",
          SCB->CFSR);
   printf("Hard Fault Status Register -> %x\n\r", SCB->HFSR);

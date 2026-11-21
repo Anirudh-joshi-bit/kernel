@@ -2,19 +2,30 @@ ENTRY(Reset_Handler)
 
 MEMORY
 {
-    FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 128K    /*change origin to 0x08020000*/
+    FLASH (rx)  : ORIGIN = 0x08020000, LENGTH = 128K    /*change origin to 0x08020000*/
     RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 96K
 }
 
 SECTIONS
 {
-    .isr_vector :
+
+    .Header :
+    {
+      _sfirmware = . ;
+      KEEP (*(.Header))
+
+    } > FLASH 
+
+    .isr_vector ALIGN (256) :
     {
         _sFLASHKernelSpace = .;
         _svtable = .;
         KEEP(*(.isr_vector))
         _evtable = .;
     } > FLASH
+
+    _size_vtable = SIZEOF (.isr_vector);
+    _header_start = ORIGIN (FLASH);
 
     .text :
     {

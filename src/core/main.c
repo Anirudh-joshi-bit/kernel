@@ -5,7 +5,7 @@
 /************************syscalls declaration*************************/
 void syscall__printf (const char* string, ...);
 void syscall__scanf  (const char* string, ...);
-void syscall__process_exit (uint32_t status);
+void syscall__process_exit ();
 
 void (*Syscall_Table [MAX_SYSCALL_NUM]) (void); 
 
@@ -46,7 +46,7 @@ void launch_process (void);
 
 
 // if any of the process returns from mainx funcktion, this function wwill be called
-void process_exit (uint32_t status) {
+void process_exit () {
   // do what ever you want with the status
 
   // i dont know why i was getting hardfault when using <*(user_process_t **) RUNNING_PROCESS_AD> T_T 
@@ -229,23 +229,3 @@ void  launch_process (void){
 }
 
 
-
-
-
-
-// 0x2000ffe8:	0x00000000	0x00000000	0x00000000	0x080102cd
-// 0x2000fff8:	0x08010279	0x01000000	0x91675ac8	0x614e7488
-//
-// 0x2000ffd8:	0x20017fd0	0x080102c9	0x00000000	0x00000000
-// 0x2000ffe8:	0x00000000	0x00000000	0x00000000	0x080102cd
-//
-//
-// 0x2000ed9c:	0x00000000	0x00000000	0x00000000	0x080102cd
-// 0x2000edac:	0x08010161	0x01000000	0x739917e9	0x416ec0ab
-//
-/*
- * 0x2000ffe8:	0x00000000	0x00000000	0x00000000	0x080102cd
-   0x2000fff8:	0x08010279	0x01000000	0x91675ac8	0x614e7488
- *
- *
- */

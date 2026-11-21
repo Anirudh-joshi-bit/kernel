@@ -39,8 +39,8 @@ void syscall__scanf(const char* msg, ...) {
     ;
 }
 
-void syscall__process_exit (uint32_t status) {
-  process_exit (status);
+void syscall__process_exit () {
+  process_exit ();
 }
 
 

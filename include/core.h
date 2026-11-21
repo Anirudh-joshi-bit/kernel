@@ -29,7 +29,7 @@ extern uint32_t _SRAMUserSpaceSize;
 // syscalls
 void syscall__printf (const char* msg, ...);
 void syscall__scanf (const char* msg, ...);
-void syscall__process_exit (uint32_t status);
+void syscall__process_exit ();
 
 // asm functions
 void PendSV_Handler(void);
@@ -43,7 +43,7 @@ void schedular (void);
 void mpu_setup (void);
 void __usart1_init (void);
 void printf (const char* msg, ... );
-void process_exit (uint32_t status);
+void process_exit ();
 uint32_t _strlen (const char *msg);
 void delay (uint32_t  count);
 void kernel_hang (const char* msg);
